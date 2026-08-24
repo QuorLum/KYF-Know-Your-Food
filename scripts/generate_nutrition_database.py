@@ -20,68 +20,75 @@ def create_database(db_path: str):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # 1. Create tables per specification
+    # 1. Create tables per Room specifications
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS profiles (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        avatar_path TEXT,
-        age INTEGER NOT NULL,
-        gender TEXT NOT NULL,
-        weight REAL NOT NULL,
-        height REAL NOT NULL,
-        allergies_json TEXT NOT NULL
+    CREATE TABLE IF NOT EXISTS `profiles` (
+        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        `name` TEXT NOT NULL,
+        `avatar_path` TEXT,
+        `age` INTEGER NOT NULL,
+        `gender` TEXT NOT NULL,
+        `weight` REAL NOT NULL,
+        `height` REAL NOT NULL,
+        `allergies_json` TEXT NOT NULL
     );
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS products (
-        barcode TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        brand TEXT NOT NULL,
-        category TEXT NOT NULL,
-        nutri_score TEXT NOT NULL,
-        sugars_100g REAL NOT NULL,
-        fat_100g REAL NOT NULL,
-        sat_fat_100g REAL NOT NULL,
-        salt_100g REAL NOT NULL,
-        protein_100g REAL NOT NULL DEFAULT 0.0,
-        energy_kcal_100g REAL NOT NULL DEFAULT 0.0,
-        fiber_100g REAL NOT NULL DEFAULT 0.0,
-        ingredients_text TEXT NOT NULL,
-        allergens_json TEXT NOT NULL,
-        healthier_alternatives_json TEXT
+    CREATE TABLE IF NOT EXISTS `products` (
+        `barcode` TEXT NOT NULL,
+        `name` TEXT NOT NULL,
+        `brand` TEXT NOT NULL,
+        `category` TEXT NOT NULL,
+        `nutri_score` TEXT NOT NULL,
+        `sugars_100g` REAL NOT NULL,
+        `fat_100g` REAL NOT NULL,
+        `sat_fat_100g` REAL NOT NULL,
+        `salt_100g` REAL NOT NULL,
+        `protein_100g` REAL NOT NULL,
+        `energy_kcal_100g` REAL NOT NULL,
+        `fiber_100g` REAL NOT NULL,
+        `ingredients_text` TEXT NOT NULL,
+        `allergens_json` TEXT NOT NULL,
+        `healthier_alternatives_json` TEXT,
+        PRIMARY KEY(`barcode`)
     );
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS raw_foods (
-        fdc_id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
-        category TEXT NOT NULL,
-        serving_g REAL NOT NULL DEFAULT 100.0,
-        protein REAL NOT NULL,
-        carbs REAL NOT NULL,
-        fat REAL NOT NULL,
-        fiber REAL NOT NULL,
-        iron REAL NOT NULL,
-        vit_c REAL NOT NULL,
-        energy_kcal REAL NOT NULL DEFAULT 0.0,
-        nutrients_json TEXT NOT NULL,
-        source TEXT NOT NULL
+    CREATE TABLE IF NOT EXISTS `raw_foods` (
+        `fdc_id` INTEGER NOT NULL,
+        `name` TEXT NOT NULL,
+        `category` TEXT NOT NULL,
+        `serving_g` REAL NOT NULL,
+        `protein` REAL NOT NULL,
+        `carbs` REAL NOT NULL,
+        `fat` REAL NOT NULL,
+        `fiber` REAL NOT NULL,
+        `iron` REAL NOT NULL,
+        `vit_c` REAL NOT NULL,
+        `energy_kcal` REAL NOT NULL,
+        `nutrients_json` TEXT NOT NULL,
+        `source` TEXT NOT NULL,
+        PRIMARY KEY(`fdc_id`)
     );
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS plate (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        profile_id INTEGER NOT NULL,
-        food_id INTEGER NOT NULL,
-        quantity_g REAL NOT NULL,
-        FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE,
-        FOREIGN KEY (food_id) REFERENCES raw_foods(fdc_id) ON DELETE CASCADE
+    CREATE TABLE IF NOT EXISTS `plate` (
+        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        `profile_id` INTEGER NOT NULL,
+        `food_id` INTEGER NOT NULL,
+        `quantity_g` REAL NOT NULL,
+        FOREIGN KEY(`profile_id`) REFERENCES `profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+        FOREIGN KEY(`food_id`) REFERENCES `raw_foods`(`fdc_id`) ON UPDATE NO ACTION ON DELETE CASCADE
     );
     """)
+
+    cursor.execute("CREATE INDEX IF NOT EXISTS `index_plate_profile_id` ON `plate` (`profile_id`);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS `index_plate_food_id` ON `plate` (`food_id`);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY, identity_hash TEXT);")
+    cursor.execute("INSERT OR REPLACE INTO room_master_table (id, identity_hash) VALUES(42, '6e9c9e26c70565eebf0487ef33dbf4dc');")
 
     # 2. Insert Default Profiles
     sample_profiles = [
