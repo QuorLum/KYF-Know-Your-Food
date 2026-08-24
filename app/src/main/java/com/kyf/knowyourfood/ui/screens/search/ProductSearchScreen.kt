@@ -1,7 +1,6 @@
 package com.kyf.knowyourfood.ui.screens.search
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,13 +9,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,7 +43,7 @@ fun ProductSearchScreen(
         // Search Bar
         OutlinedTextField(
             value = state.query,
-            onValueChange = { viewModel.onQueryChanged(it) },
+            onValueChange = { text -> viewModel.onQueryChanged(text) },
             placeholder = { Text("Search products, brands, barcodes...", color = Slate400) },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = Emerald400)
@@ -217,7 +216,7 @@ fun ProductSearchScreen(
             contentPadding = PaddingValues(bottom = 90.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(state.products, key = { it.barcode }) { product ->
+            items(state.products, key = { product: ProductItem -> product.barcode }) { product: ProductItem ->
                 ProductListItemCard(
                     product = product,
                     onClick = { onProductClick(product.barcode) }

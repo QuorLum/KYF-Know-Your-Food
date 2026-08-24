@@ -1,0 +1,72 @@
+com.kyf.knowyourfood.app-resValues-0 C:\FILES\MY Projects\antigravity\KYF - Know Your Food\app\build\generated\res\resValues\debug
+com.kyf.knowyourfood.app-packageDebugResources-1 C:\FILES\MY Projects\antigravity\KYF - Know Your Food\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.kyf.knowyourfood.app-packageDebugResources-2 C:\FILES\MY Projects\antigravity\KYF - Know Your Food\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.kyf.knowyourfood.app-merged_res-3 C:\FILES\MY Projects\antigravity\KYF - Know Your Food\app\build\intermediates\merged_res\debug
+com.kyf.knowyourfood.app-debug-4 C:\FILES\MY Projects\antigravity\KYF - Know Your Food\app\src\debug\res
+com.kyf.knowyourfood.app-main-5 C:\FILES\MY Projects\antigravity\KYF - Know Your Food\app\src\main\res
+com.kyf.knowyourfood.app-activity-1.8.2-6 C:\Users\QuorLum\.gradle\caches\transforms-3\01232bbb2caaa242f477b1e5ce070ca2\transformed\activity-1.8.2\res
+com.kyf.knowyourfood.app-lifecycle-livedata-2.7.0-7 C:\Users\QuorLum\.gradle\caches\transforms-3\0262035072b995e5a2b0703b67ae33ae\transformed\lifecycle-livedata-2.7.0\res
+com.kyf.knowyourfood.app-appcompat-1.6.1-8 C:\Users\QuorLum\.gradle\caches\transforms-3\0499ebf7124076c8ea789d57b992ef55\transformed\appcompat-1.6.1\res
+com.kyf.knowyourfood.app-material-icons-core-release-9 C:\Users\QuorLum\.gradle\caches\transforms-3\04c8e10592689f1b7e3b9b30e4618ff0\transformed\material-icons-core-release\res
+com.kyf.knowyourfood.app-navigation-runtime-2.7.7-10 C:\Users\QuorLum\.gradle\caches\transforms-3\05746461e1a160678f9e4dd44ce4b2bc\transformed\navigation-runtime-2.7.7\res
+com.kyf.knowyourfood.app-coil-base-2.6.0-11 C:\Users\QuorLum\.gradle\caches\transforms-3\067d7b5538a865d4aea7c94b90490463\transformed\coil-base-2.6.0\res
+com.kyf.knowyourfood.app-profileinstaller-1.3.1-12 C:\Users\QuorLum\.gradle\caches\transforms-3\0a08084ba926e746b8b7cee6f621aed8\transformed\profileinstaller-1.3.1\res
+com.kyf.knowyourfood.app-camera-video-1.3.2-13 C:\Users\QuorLum\.gradle\caches\transforms-3\122fe71749a1117e77ba0cfcedfcde16\transformed\camera-video-1.3.2\res
+com.kyf.knowyourfood.app-navigation-runtime-ktx-2.7.7-14 C:\Users\QuorLum\.gradle\caches\transforms-3\12f16f40f3fba2b5478e38ed4ae5e0af\transformed\navigation-runtime-ktx-2.7.7\res
+com.kyf.knowyourfood.app-savedstate-1.2.1-15 C:\Users\QuorLum\.gradle\caches\transforms-3\160a80af7b7c0f2ae7c4817c27c0389d\transformed\savedstate-1.2.1\res
+com.kyf.knowyourfood.app-runtime-release-16 C:\Users\QuorLum\.gradle\caches\transforms-3\182c785f1a3a09d3d876f458f6c4986b\transformed\runtime-release\res
+com.kyf.knowyourfood.app-room-ktx-2.6.1-17 C:\Users\QuorLum\.gradle\caches\transforms-3\18d3a0a6a6aec8d4406ef62fada80393\transformed\room-ktx-2.6.1\res
+com.kyf.knowyourfood.app-foundation-release-18 C:\Users\QuorLum\.gradle\caches\transforms-3\21f391ed8fadcc6923d5cb83a8568cc2\transformed\foundation-release\res
+com.kyf.knowyourfood.app-lifecycle-runtime-ktx-2.7.0-19 C:\Users\QuorLum\.gradle\caches\transforms-3\242878a446c6e2aa8ebd5b8d8b4f4c10\transformed\lifecycle-runtime-ktx-2.7.0\res
+com.kyf.knowyourfood.app-lifecycle-viewmodel-ktx-2.7.0-20 C:\Users\QuorLum\.gradle\caches\transforms-3\2874da46b7932765203f2efea1ff6cfa\transformed\lifecycle-viewmodel-ktx-2.7.0\res
+com.kyf.knowyourfood.app-foundation-layout-release-21 C:\Users\QuorLum\.gradle\caches\transforms-3\2a95328423e042e4dea8150185249448\transformed\foundation-layout-release\res
+com.kyf.knowyourfood.app-fragment-1.3.6-22 C:\Users\QuorLum\.gradle\caches\transforms-3\48ad4f6c8924a89cb9f74ae563b05283\transformed\fragment-1.3.6\res
+com.kyf.knowyourfood.app-animation-core-release-23 C:\Users\QuorLum\.gradle\caches\transforms-3\4903b516dfc585dd6301d7ce4ed4ae81\transformed\animation-core-release\res
+com.kyf.knowyourfood.app-lifecycle-runtime-2.7.0-24 C:\Users\QuorLum\.gradle\caches\transforms-3\4ad549fc61c0b41a7aecf8238381c519\transformed\lifecycle-runtime-2.7.0\res
+com.kyf.knowyourfood.app-navigation-compose-2.7.7-25 C:\Users\QuorLum\.gradle\caches\transforms-3\4f9a5d06e8d10619d6d3604d4183367f\transformed\navigation-compose-2.7.7\res
+com.kyf.knowyourfood.app-core-1.12.0-26 C:\Users\QuorLum\.gradle\caches\transforms-3\4fe96c21691c98ce52d2174c36b1cf11\transformed\core-1.12.0\res
+com.kyf.knowyourfood.app-material-icons-extended-release-27 C:\Users\QuorLum\.gradle\caches\transforms-3\5ae4f26146d53273d47db205c2628c43\transformed\material-icons-extended-release\res
+com.kyf.knowyourfood.app-activity-ktx-1.8.2-28 C:\Users\QuorLum\.gradle\caches\transforms-3\5c5aef657421a56e06ff57a5c7ef0ab0\transformed\activity-ktx-1.8.2\res
+com.kyf.knowyourfood.app-core-ktx-1.12.0-29 C:\Users\QuorLum\.gradle\caches\transforms-3\5df0755a327a369c48c2e43c08575a84\transformed\core-ktx-1.12.0\res
+com.kyf.knowyourfood.app-navigation-common-ktx-2.7.7-30 C:\Users\QuorLum\.gradle\caches\transforms-3\61cba4d484770122d66d6d49d468f2bf\transformed\navigation-common-ktx-2.7.7\res
+com.kyf.knowyourfood.app-camera-core-1.3.2-31 C:\Users\QuorLum\.gradle\caches\transforms-3\641fd4c83822a875bf8d7722c781583c\transformed\camera-core-1.3.2\res
+com.kyf.knowyourfood.app-camera-camera2-1.3.2-32 C:\Users\QuorLum\.gradle\caches\transforms-3\66ca7e35215ec7a19e87e59ebd82b118\transformed\camera-camera2-1.3.2\res
+com.kyf.knowyourfood.app-material-ripple-release-33 C:\Users\QuorLum\.gradle\caches\transforms-3\6764eb3304545be2df9d5e3bed53c334\transformed\material-ripple-release\res
+com.kyf.knowyourfood.app-lifecycle-process-2.7.0-34 C:\Users\QuorLum\.gradle\caches\transforms-3\6a3893fdfe1ebe2d42ecf394ce2d01d8\transformed\lifecycle-process-2.7.0\res
+com.kyf.knowyourfood.app-sqlite-2.4.0-35 C:\Users\QuorLum\.gradle\caches\transforms-3\6d3e51a795a133c927d16f835242b781\transformed\sqlite-2.4.0\res
+com.kyf.knowyourfood.app-ui-util-release-36 C:\Users\QuorLum\.gradle\caches\transforms-3\6d8f810b754e856395c26344f42a9d19\transformed\ui-util-release\res
+com.kyf.knowyourfood.app-ui-graphics-release-37 C:\Users\QuorLum\.gradle\caches\transforms-3\6ff99a9c0e42840c8f17d3be878c6096\transformed\ui-graphics-release\res
+com.kyf.knowyourfood.app-ui-test-manifest-1.6.2-38 C:\Users\QuorLum\.gradle\caches\transforms-3\7175a9407d06769e3f5f6122530f5b1a\transformed\ui-test-manifest-1.6.2\res
+com.kyf.knowyourfood.app-activity-compose-1.8.2-39 C:\Users\QuorLum\.gradle\caches\transforms-3\7282444a0c59a149098dde556a17dd14\transformed\activity-compose-1.8.2\res
+com.kyf.knowyourfood.app-customview-poolingcontainer-1.0.0-40 C:\Users\QuorLum\.gradle\caches\transforms-3\7a834614639900ac0d5dde16b5c50973\transformed\customview-poolingcontainer-1.0.0\res
+com.kyf.knowyourfood.app-material3-release-41 C:\Users\QuorLum\.gradle\caches\transforms-3\7b7553c0defdc0e73f273e22c453ac54\transformed\material3-release\res
+com.kyf.knowyourfood.app-lifecycle-viewmodel-2.7.0-42 C:\Users\QuorLum\.gradle\caches\transforms-3\7ee47885cc385b29d82c1c3d6beb0cb8\transformed\lifecycle-viewmodel-2.7.0\res
+com.kyf.knowyourfood.app-emoji2-views-helper-1.3.0-43 C:\Users\QuorLum\.gradle\caches\transforms-3\7fcb04007462666fdb268b7891a63b9f\transformed\emoji2-views-helper-1.3.0\res
+com.kyf.knowyourfood.app-play-services-basement-18.1.0-44 C:\Users\QuorLum\.gradle\caches\transforms-3\8d88e4374be4e400320f0ee02619dffa\transformed\play-services-basement-18.1.0\res
+com.kyf.knowyourfood.app-emoji2-1.3.0-45 C:\Users\QuorLum\.gradle\caches\transforms-3\8e1f4affbe05a12b863adb72036e1d81\transformed\emoji2-1.3.0\res
+com.kyf.knowyourfood.app-room-runtime-2.6.1-46 C:\Users\QuorLum\.gradle\caches\transforms-3\8f01710b6b0ff1d5496db6c58ba5369a\transformed\room-runtime-2.6.1\res
+com.kyf.knowyourfood.app-camera-lifecycle-1.3.2-47 C:\Users\QuorLum\.gradle\caches\transforms-3\8f3d8848b5cc5671f4597d81df2894fc\transformed\camera-lifecycle-1.3.2\res
+com.kyf.knowyourfood.app-lifecycle-livedata-core-ktx-2.7.0-48 C:\Users\QuorLum\.gradle\caches\transforms-3\96135aaf32fc00907fd7cf38e68f26cd\transformed\lifecycle-livedata-core-ktx-2.7.0\res
+com.kyf.knowyourfood.app-ui-geometry-release-49 C:\Users\QuorLum\.gradle\caches\transforms-3\9755ad2d1e842fc12931539769ace4f9\transformed\ui-geometry-release\res
+com.kyf.knowyourfood.app-lifecycle-viewmodel-compose-2.7.0-50 C:\Users\QuorLum\.gradle\caches\transforms-3\97d2924ccca5f2d4478b284f5f7742d1\transformed\lifecycle-viewmodel-compose-2.7.0\res
+com.kyf.knowyourfood.app-play-services-base-18.1.0-51 C:\Users\QuorLum\.gradle\caches\transforms-3\9814396cfbf3cc586cdff9984f72f277\transformed\play-services-base-18.1.0\res
+com.kyf.knowyourfood.app-camera-view-1.3.2-52 C:\Users\QuorLum\.gradle\caches\transforms-3\98aaca0b9bbdc7624d21dcbb9ff098f6\transformed\camera-view-1.3.2\res
+com.kyf.knowyourfood.app-lifecycle-viewmodel-savedstate-2.7.0-53 C:\Users\QuorLum\.gradle\caches\transforms-3\a0ad0b5822d6bb8944eb2a9be3d9699a\transformed\lifecycle-viewmodel-savedstate-2.7.0\res
+com.kyf.knowyourfood.app-ui-release-54 C:\Users\QuorLum\.gradle\caches\transforms-3\a0d7ddf1589f1ba1af153a58a76ae1f9\transformed\ui-release\res
+com.kyf.knowyourfood.app-ui-tooling-data-release-55 C:\Users\QuorLum\.gradle\caches\transforms-3\a136e6ab24354989e0b4b338be52bcca\transformed\ui-tooling-data-release\res
+com.kyf.knowyourfood.app-core-runtime-2.2.0-56 C:\Users\QuorLum\.gradle\caches\transforms-3\a9e46edee30821761a6f47e2a6722007\transformed\core-runtime-2.2.0\res
+com.kyf.knowyourfood.app-appcompat-resources-1.6.1-57 C:\Users\QuorLum\.gradle\caches\transforms-3\aadd1162aa68454b3bafd1c3c52ff304\transformed\appcompat-resources-1.6.1\res
+com.kyf.knowyourfood.app-startup-runtime-1.1.1-58 C:\Users\QuorLum\.gradle\caches\transforms-3\ac4170116570042b41f05975b62fcb67\transformed\startup-runtime-1.1.1\res
+com.kyf.knowyourfood.app-ui-text-release-59 C:\Users\QuorLum\.gradle\caches\transforms-3\ae0469079a961f59053dbabd674b5ead\transformed\ui-text-release\res
+com.kyf.knowyourfood.app-ui-unit-release-60 C:\Users\QuorLum\.gradle\caches\transforms-3\b1cdb677bfa6de8f58847e4afbf2cbb7\transformed\ui-unit-release\res
+com.kyf.knowyourfood.app-lifecycle-runtime-compose-2.7.0-61 C:\Users\QuorLum\.gradle\caches\transforms-3\b4a94bead530b0135da084cb3cc9c4fb\transformed\lifecycle-runtime-compose-2.7.0\res
+com.kyf.knowyourfood.app-material-release-62 C:\Users\QuorLum\.gradle\caches\transforms-3\cb57d28d5fad8063d369f264f1f7ba73\transformed\material-release\res
+com.kyf.knowyourfood.app-navigation-common-2.7.7-63 C:\Users\QuorLum\.gradle\caches\transforms-3\d00a27a8e709c7300b62f881e7b67a4e\transformed\navigation-common-2.7.7\res
+com.kyf.knowyourfood.app-annotation-experimental-1.4.0-64 C:\Users\QuorLum\.gradle\caches\transforms-3\de37719a3b53f1c61c2f2fa5d2fc6174\transformed\annotation-experimental-1.4.0\res
+com.kyf.knowyourfood.app-ui-tooling-preview-release-65 C:\Users\QuorLum\.gradle\caches\transforms-3\e24d231397c91092035f611ed2eb3e67\transformed\ui-tooling-preview-release\res
+com.kyf.knowyourfood.app-savedstate-ktx-1.2.1-66 C:\Users\QuorLum\.gradle\caches\transforms-3\e2e7bdfeae57d17062cdbfdc723bed58\transformed\savedstate-ktx-1.2.1\res
+com.kyf.knowyourfood.app-ui-tooling-release-67 C:\Users\QuorLum\.gradle\caches\transforms-3\eb5780e99c5b9b5cdb4d3672fd862240\transformed\ui-tooling-release\res
+com.kyf.knowyourfood.app-sqlite-framework-2.4.0-68 C:\Users\QuorLum\.gradle\caches\transforms-3\fbbe764c0e7ad4875f8a73645175099b\transformed\sqlite-framework-2.4.0\res
+com.kyf.knowyourfood.app-animation-release-69 C:\Users\QuorLum\.gradle\caches\transforms-3\fe3316c61e657b1f1cf5de7c729c13d0\transformed\animation-release\res
+com.kyf.knowyourfood.app-lifecycle-livedata-core-2.7.0-70 C:\Users\QuorLum\.gradle\caches\transforms-3\fe63ed9a4687d28547f7242b6a21aac9\transformed\lifecycle-livedata-core-2.7.0\res
+com.kyf.knowyourfood.app-runtime-saveable-release-71 C:\Users\QuorLum\.gradle\caches\transforms-3\fff18e6ab4ace8b22736b438720d9398\transformed\runtime-saveable-release\res

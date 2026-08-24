@@ -1,12 +1,15 @@
 package com.kyf.knowyourfood.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class AllergyProfile(
     val allergens: List<String> = emptyList(), // e.g. "PEANUT", "TREE_NUTS", "MILK", "EGG", "WHEAT", "SOYBEANS", "FISH", "CRUSTACEANS", "SESAME", "CELERY", "MUSTARD", "SULPHITES", "LUPIN", "MOLLUSCS"
+    @SerialName("pollen_sensitivities")
     val pollenSensitivities: List<String> = emptyList(), // "BIRCH", "GRASS", "RAGWEED", "MUGWORT", "LATEX"
     val conditions: List<String> = emptyList(), // "CELIAC", "FPIES", "ALPHA_GAL", "LACTOSE_INTOLERANCE", "HISTAMINE_INTOLERANCE", "SULFITE_SENSITIVITY", "EOSINOPHILIC_ESOPHAGITIS"
+    @SerialName("strict_traces")
     val strictTraces: Boolean = true // Flag whether 'may contain' trace warnings should trigger high alerts
 )
 

@@ -1,5 +1,7 @@
 package com.kyf.knowyourfood.domain.engine
 
+import com.kyf.knowyourfood.data.local.entity.ProductEntity
+import com.kyf.knowyourfood.data.local.entity.ProfileEntity
 import com.kyf.knowyourfood.data.model.*
 import kotlinx.serialization.json.Json
 
@@ -214,7 +216,9 @@ object AllergyEngine {
     }
 
     private fun containsWholeWord(text: String, word: String): Boolean {
-        val regex = Regex("\\b${Regex.escape(word.lowercase())}\\b", RegexOption.IGNORE_CASE)
+        val escaped = Regex.escape(word.lowercase())
+        val pattern = "\\b${escaped}(?:s|es|ies)?\\b"
+        val regex = Regex(pattern, RegexOption.IGNORE_CASE)
         return regex.containsMatchIn(text)
     }
 

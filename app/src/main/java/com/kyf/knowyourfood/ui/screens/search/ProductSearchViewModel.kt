@@ -2,7 +2,6 @@ package com.kyf.knowyourfood.ui.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kyf.knowyourfood.data.model.NutriScoreGrade
 import com.kyf.knowyourfood.data.model.ProductItem
 import com.kyf.knowyourfood.data.repository.ProductRepository
 import kotlinx.coroutines.flow.*
@@ -12,7 +11,7 @@ data class SearchUiState(
     val query: String = "",
     val selectedNutriScore: String = "",
     val selectedCategory: String = "",
-    val filterAllergenFree: String = "", // e.g. "GLUTEN", "MILK", "PEANUT"
+    val filterAllergenFree: String = "",
     val filterHighProtein: Boolean = false,
     val filterLowSugar: Boolean = false,
     val filterLowSalt: Boolean = false,
@@ -25,14 +24,17 @@ class ProductSearchViewModel(
     private val productRepository: ProductRepository
 ) : ViewModel() {
 
-    private val _query = MutableStateFlow("")
-    private val _selectedNutriScore = MutableStateFlow("")
-    private val _selectedCategory = MutableStateFlow("")
-    private val _filterAllergenFree = MutableStateFlow("")
-    private val _filterHighProtein = MutableStateFlow(false)
-    private val _filterLowSugar = MutableStateFlow(false)
-    private val _filterLowSalt = MutableStateFlow(false)
+    private data class FilterParams(
+        val query: String = "",
+        val nutriScore: String = "",
+        val category: String = "",
+        val allergenFree: String = "",
+        val highProtein: Boolean = false,
+        val lowSugar: Boolean = false,
+        val lowSalt: Boolean = false
+    )
 
+    private val _filterParams = MutableStateFlow(FilterParams())
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
@@ -51,17 +53,7 @@ class ProductSearchViewModel(
 
     private fun observeProducts() {
         viewModelScope.launch {
-            combine(
-                _query,
-                _selectedNutriScore,
-                _selectedCategory,
-                _filterAllergenFree,
-                _filterHighProtein,
-                _filterLowSugar,
-                _filterLowSalt
-            ) { q, ns, cat, allergenFree, highProtein, lowSugar, lowSalt ->
-                FilterParams(q, ns, cat, allergenFree, highProtein, lowSugar, lowSalt)
-            }.flatMapLatest { params ->
+            _filterParams.flatMapLatest { params ->
                 productRepository.searchProducts(params.query, params.nutriScore, params.category).map { list ->
                     var filtered = list
 
@@ -87,15 +79,16 @@ class ProductSearchViewModel(
                     filtered
                 }
             }.collect { results ->
+                val p = _filterParams.value
                 _uiState.update {
                     it.copy(
-                        query = _query.value,
-                        selectedNutriScore = _selectedNutriScore.value,
-                        selectedCategory = _selectedCategory.value,
-                        filterAllergenFree = _filterAllerfreeText(),
-                        filterHighProtein = _filterHighProtein.value,
-                        filterLowSugar = _filterLowSugar.value,
-                        filterLowSalt = _filterLowSalt.value,
+                        query = p.query,
+                        selectedNutriScore = p.nutriScore,
+                        selectedCategory = p.category,
+                        filterAllergenFree = p.allergenFree,
+                        filterHighProtein = p.highProtein,
+                        filterLowSugar = p.lowSugar,
+                        filterLowSalt = p.lowSalt,
                         products = results,
                         isLoading = false
                     )
@@ -104,53 +97,41 @@ class ProductSearchViewModel(
         }
     }
 
-    private fun _filterAllerfreeText() = _filterAllergenFree.value
-
     fun onQueryChanged(newQuery: String) {
-        _query.value = newQuery
+        _filterParams.update { it.copy(query = newQuery) }
     }
 
     fun selectNutriScoreFilter(score: String) {
-        _selectedNutriScore.value = if (_selectedNutriScore.value == score) "" else score
+        _filterParams.update {
+            it.copy(nutriScore = if (it.nutriScore == score) "" else score)
+        }
     }
 
     fun selectCategoryFilter(cat: String) {
-        _selectedCategory.value = if (_selectedCategory.value == cat) "" else cat
+        _filterParams.update {
+            it.copy(category = if (it.category == cat) "" else cat)
+        }
     }
 
     fun setAllergenFreeFilter(allergen: String) {
-        _filterAllergenFree.value = if (_filterAllergenFree.value == allergen) "" else allergen
+        _filterParams.update {
+            it.copy(allergenFree = if (it.allergenFree == allergen) "" else allergen)
+        }
     }
 
     fun toggleHighProtein() {
-        _filterHighProtein.value = !_filterHighProtein.value
+        _filterParams.update { it.copy(highProtein = !it.highProtein) }
     }
 
     fun toggleLowSugar() {
-        _filterLowSugar.value = !_filterLowSugar.value
+        _filterParams.update { it.copy(lowSugar = !it.lowSugar) }
     }
 
     fun toggleLowSalt() {
-        _filterLowSalt.value = !_filterLowSalt.value
+        _filterParams.update { it.copy(lowSalt = !it.lowSalt) }
     }
 
     fun resetFilters() {
-        _query.value = ""
-        _selectedNutriScore.value = ""
-        _selectedCategory.value = ""
-        _filterAllergenFree.value = ""
-        _filterHighProtein.value = false
-        _filterLowSugar.value = false
-        _filterLowSalt.value = false
+        _filterParams.value = FilterParams()
     }
-
-    private data class FilterParams(
-        val query: String,
-        val nutriScore: String,
-        val category: String,
-        val allergenFree: String,
-        val highProtein: Boolean,
-        val lowSugar: Boolean,
-        val lowSalt: Boolean
-    )
 }
