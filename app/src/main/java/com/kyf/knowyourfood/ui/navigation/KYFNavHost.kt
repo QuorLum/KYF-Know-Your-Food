@@ -43,6 +43,7 @@ import com.kyf.knowyourfood.ui.screens.scanner.BarcodeScannerScreen
 import com.kyf.knowyourfood.ui.screens.scanner.ScannerViewModel
 import com.kyf.knowyourfood.ui.screens.search.ProductSearchScreen
 import com.kyf.knowyourfood.ui.screens.search.ProductSearchViewModel
+import com.kyf.knowyourfood.ui.components.FloatingBottomBar
 import com.kyf.knowyourfood.ui.screens.settings.SettingsScreen
 import com.kyf.knowyourfood.ui.theme.*
 
@@ -76,99 +77,21 @@ fun KYFNavHost(
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
-                NavigationBar(
-                    containerColor = Slate900,
-                    tonalElevation = 8.dp,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                        .border(1.dp, Slate800, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                        .navigationBarsPadding()
-                ) {
-                    bottomBarScreens.forEach { screen ->
-                        val isSelected = currentRoute == screen.route
-
-                        if (screen == Screen.Scanner) {
-                            // Central Prominent Scanner Action FAB
-                            NavigationBarItem(
-                                selected = isSelected,
-                                onClick = {
-                                    navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(52.dp)
-                                            .clip(CircleShape)
-                                            .background(
-                                                Brush.verticalGradient(
-                                                    colors = listOf(Emerald400, Emerald500)
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.QrCodeScanner,
-                                            contentDescription = "Scanner",
-                                            tint = Slate950,
-                                            modifier = Modifier.size(26.dp)
-                                        )
-                                    }
-                                },
-                                label = {
-                                    Text(
-                                        text = "Scan",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.sp,
-                                        color = Emerald400
-                                    )
-                                },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Color.Transparent
-                                )
-                            )
-                        } else {
-                            NavigationBarItem(
-                                selected = isSelected,
-                                onClick = {
-                                    navController.navigate(screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    Icon(
-                                        imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                        contentDescription = screen.title,
-                                        tint = if (isSelected) Emerald400 else Slate400
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        text = screen.title,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                        fontSize = 10.sp,
-                                        color = if (isSelected) Emerald400 else Slate400
-                                    )
-                                },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Emerald500.copy(alpha = 0.15f)
-                                )
-                            )
+                FloatingBottomBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
-                }
+                )
             }
         },
-        containerColor = Slate950
+        containerColor = Color.Transparent
     ) { innerPadding ->
         NavHost(
             navController = navController,
@@ -256,7 +179,10 @@ fun KYFNavHost(
                 val viewModel: ProfilesViewModel = viewModel {
                     ProfilesViewModel(app.profileRepository)
                 }
-                ProfilesScreen(viewModel = viewModel)
+                ProfilesScreen(
+                    viewModel = viewModel,
+                    onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
+                )
             }
 
             // 6. Search

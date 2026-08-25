@@ -15,9 +15,15 @@ import kotlinx.serialization.json.Json
 
 data class ProfilesUiState(
     val profiles: List<ProfileEntity> = emptyList(),
+    val activeProfileId: Long = 1L,
     val editingProfile: ProfileEntity? = null,
     val isCreatingNew: Boolean = false,
-    val showEditDialog: Boolean = false
+    val showEditDialog: Boolean = false,
+    val draftName: String = "",
+    val draftAge: String = "25",
+    val draftGender: String = "Male",
+    val draftWeight: String = "65",
+    val draftHeight: String = "170"
 )
 
 class ProfilesViewModel(
@@ -36,9 +42,14 @@ class ProfilesViewModel(
     private fun loadProfiles() {
         viewModelScope.launch {
             profileRepository.getAllProfiles().collect { list ->
-                _uiState.update { it.copy(profiles = list) }
+                val activeId = if (_uiState.value.activeProfileId != 1L) _uiState.value.activeProfileId else list.firstOrNull()?.id ?: 1L
+                _uiState.update { it.copy(profiles = list, activeProfileId = activeId) }
             }
         }
+    }
+
+    fun selectProfile(id: Long) {
+        _uiState.update { it.copy(activeProfileId = id) }
     }
 
     fun openCreateProfile() {
@@ -46,7 +57,12 @@ class ProfilesViewModel(
             it.copy(
                 editingProfile = null,
                 isCreatingNew = true,
-                showEditDialog = true
+                showEditDialog = true,
+                draftName = "",
+                draftAge = "25",
+                draftGender = "Male",
+                draftWeight = "65",
+                draftHeight = "170"
             )
         }
     }
@@ -56,13 +72,46 @@ class ProfilesViewModel(
             it.copy(
                 editingProfile = profile,
                 isCreatingNew = false,
-                showEditDialog = true
+                showEditDialog = true,
+                draftName = profile.name,
+                draftAge = profile.age.toString(),
+                draftGender = profile.gender,
+                draftWeight = profile.weight.toInt().toString(),
+                draftHeight = profile.height.toInt().toString()
             )
         }
     }
 
     fun closeEditDialog() {
-        _uiState.update { it.copy(showEditDialog = false, editingProfile = null) }
+        _uiState.update { it.copy(showEditDialog = false, editingProfile = null, isCreatingNew = false) }
+    }
+
+    fun onNameChanged(name: String) = _uiState.update { it.copy(draftName = name) }
+    fun onAgeChanged(age: String) = _uiState.update { it.copy(draftAge = age) }
+    fun onGenderChanged(gender: String) = _uiState.update { it.copy(draftGender = gender) }
+    fun onWeightChanged(weight: String) = _uiState.update { it.copy(draftWeight = weight) }
+    fun onHeightChanged(height: String) = _uiState.update { it.copy(draftHeight = height) }
+
+    fun saveDraftProfile() {
+        val state = _uiState.value
+        val name = state.draftName.ifBlank { "Family Member" }
+        val age = state.draftAge.toIntOrNull() ?: 25
+        val gender = state.draftGender.ifBlank { "Male" }
+        val weight = state.draftWeight.toDoubleOrNull() ?: 65.0
+        val height = state.draftHeight.toDoubleOrNull() ?: 170.0
+
+        saveProfile(
+            id = state.editingProfile?.id,
+            name = name,
+            age = age,
+            gender = gender,
+            weight = weight,
+            height = height,
+            allergens = emptyList(),
+            pollen = emptyList(),
+            conditions = emptyList(),
+            strictTraces = false
+        )
     }
 
     fun saveProfile(
@@ -101,14 +150,15 @@ class ProfilesViewModel(
             } else {
                 val newEntity = ProfileEntity(
                     name = name,
-                    avatarPath = "avatar_user",
+                    avatarPath = null,
                     age = age,
                     gender = gender,
                     weight = weight,
                     height = height,
                     allergiesJson = allergiesJson
                 )
-                profileRepository.insertProfile(newEntity)
+                val newId = profileRepository.insertProfile(newEntity)
+                _uiState.update { it.copy(activeProfileId = newId) }
             }
             closeEditDialog()
         }

@@ -157,6 +157,13 @@ class PlateViewModel(
         }
     }
 
+    fun updateItemGramsDirectly(plateId: Long, newGrams: Double) {
+        val item = _uiState.value.plateItems.find { it.plateId == plateId } ?: return
+        viewModelScope.launch {
+            plateRepository.updatePlateItemQuantity(item.plateId, item.profileId, item.foodItem.fdcId, newGrams)
+        }
+    }
+
     fun closeEditDialog() {
         _uiState.update { it.copy(isEditingItem = null) }
     }

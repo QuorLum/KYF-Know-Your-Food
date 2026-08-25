@@ -1,12 +1,13 @@
 package com.kyf.knowyourfood.ui.screens.settings
 
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,140 +17,183 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyf.knowyourfood.ui.components.GlassmorphicCard
+import com.kyf.knowyourfood.ui.components.ScreenHeader
 import com.kyf.knowyourfood.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val languages = listOf("English", "हिन्दी", "Español", "Français")
+
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToProfiles: () -> Unit
 ) {
+    val context = LocalContext.current
     var isMetric by remember { mutableStateOf(true) }
-    var isOfflineFirst by remember { mutableStateOf(true) }
-    var selectedLanguage by remember { mutableStateOf("English") }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    var isOfflineMode by remember { mutableStateOf(true) }
+    var languageIndex by remember { mutableStateOf(0) }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("Settings & Preferences", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Slate950)
-            )
-        },
-        containerColor = Slate950
-    ) { padding ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        // Screen Header
+        ScreenHeader(
+            title = "Settings",
+            onBack = onNavigateBack
+        )
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(bottom = 80.dp),
+            contentPadding = PaddingValues(top = 4.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Health Preferences Group
+            // Group 1: Health Preferences
             item {
-                Text(text = "HEALTH PREFERENCES", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Slate400)
-                Spacer(modifier = Modifier.height(8.dp))
-                GlassmorphicCard(modifier = Modifier.fillMaxWidth(), backgroundColor = Slate900) {
-                    Column {
+                Text(
+                    text = "HEALTH PREFERENCES",
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.45f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+                )
+                GlassmorphicCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
                         SettingLinkRow(
                             icon = Icons.Default.Shield,
+                            label = "Allergens & Sensitivities",
                             tint = Emerald400,
-                            title = "Allergens & Sensitivities",
-                            subtitle = "Guarded ingredients & strict trace mode",
                             onClick = onNavigateToProfiles
                         )
-                        Divider(color = Slate800)
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
                         SettingLinkRow(
                             icon = Icons.Default.Favorite,
-                            tint = Color(0xFFF472B6),
-                            title = "Family Dietary Profiles",
-                            subtitle = "Manage family profiles & limits",
+                            label = "Dietary Preferences",
+                            tint = Color(0xFFF87171),
+                            onClick = onNavigateToProfiles
+                        )
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                        SettingLinkRow(
+                            icon = Icons.Default.TrackChanges,
+                            label = "Health Goals",
+                            value = "Maintain weight",
+                            tint = Cyan400,
                             onClick = onNavigateToProfiles
                         )
                     }
                 }
             }
 
-            // App Preferences Group
+            // Group 2: App Preferences
             item {
-                Text(text = "APP PREFERENCES", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Slate400)
-                Spacer(modifier = Modifier.height(8.dp))
-                GlassmorphicCard(modifier = Modifier.fillMaxWidth(), backgroundColor = Slate900) {
-                    Column {
+                Text(
+                    text = "APP PREFERENCES",
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.45f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+                )
+                GlassmorphicCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
                         SettingToggleRow(
                             icon = Icons.Default.Straighten,
-                            tint = Cyan400,
-                            title = "Units of Measurement",
-                            subtitle = if (isMetric) "Metric (g, kg, kcal)" else "Imperial (oz, lb, cal)",
+                            label = "Units",
+                            value = if (isMetric) "Metric (g, kg)" else "Imperial (oz, lb)",
                             isChecked = isMetric,
-                            onCheckedChange = { isMetric = it }
+                            onCheckedChange = { isMetric = it },
+                            tint = Color(0xFFA78BFA)
                         )
-                        Divider(color = Slate800)
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                        SettingLinkRow(
+                            icon = Icons.Default.Language,
+                            label = "Language",
+                            value = languages[languageIndex],
+                            tint = Emerald400,
+                            onClick = {
+                                languageIndex = (languageIndex + 1) % languages.size
+                                Toast.makeText(context, "Language set to ${languages[languageIndex]}", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                        SettingLinkRow(
+                            icon = Icons.Default.Palette,
+                            label = "Theme",
+                            value = "Dark Frosted · Dark",
+                            tint = TrafficYellow,
+                            onClick = {
+                                Toast.makeText(context, "Dark Frosted theme active", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Group 3: Data & Privacy
+            item {
+                Text(
+                    text = "DATA & PRIVACY",
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.45f),
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+                )
+                GlassmorphicCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
                         SettingToggleRow(
                             icon = Icons.Default.WifiOff,
-                            tint = Emerald400,
-                            title = "Offline-First Sync & Cache",
-                            subtitle = if (isOfflineFirst) "On · Instant offline lookup" else "Off",
-                            isChecked = isOfflineFirst,
-                            onCheckedChange = { isOfflineFirst = it }
+                            label = "Offline-First Mode",
+                            value = if (isOfflineMode) "On · Fully private" else "Off",
+                            isChecked = isOfflineMode,
+                            onCheckedChange = { isOfflineMode = it },
+                            tint = Emerald400
+                        )
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                        SettingLinkRow(
+                            icon = Icons.Default.Storage,
+                            label = "Manage Offline Data",
+                            value = "248 MB",
+                            tint = Cyan400,
+                            onClick = {
+                                Toast.makeText(context, "Offline database is up to date · 248 MB", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                        SettingLinkRow(
+                            icon = Icons.Default.Info,
+                            label = "About KYF",
+                            value = "v1.0.0",
+                            tint = Color(0xFFA78BFA),
+                            onClick = {
+                                Toast.makeText(context, "KYF — Know Your Food · v1.0.0", Toast.LENGTH_SHORT).show()
+                            }
                         )
                     }
                 }
             }
 
-            // Data & Privacy
+            // 100% Offline Banner
             item {
-                Text(text = "DATA & PRIVACY", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Slate400)
-                Spacer(modifier = Modifier.height(8.dp))
-                GlassmorphicCard(modifier = Modifier.fillMaxWidth(), backgroundColor = Slate900) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🛡️", fontSize = 20.sp)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text("100% Private On-Device Execution", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                Text("Your health profile and scanned data are stored securely on this phone.", fontSize = 11.sp, color = Slate400)
-                            }
-                        }
-                    }
-                }
-            }
-
-            // About Card
-            item {
-                GlassmorphicCard(modifier = Modifier.fillMaxWidth(), backgroundColor = Slate900) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Emerald500.copy(alpha = 0.1f))
+                        .border(1.dp, Emerald500.copy(alpha = 0.28f), RoundedCornerShape(18.dp))
+                        .padding(14.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = Icons.Default.WifiOff, contentDescription = null, tint = Emerald400, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Know Your Food (KYF)", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("Version 1.0.0 · Gemini AI & OpenFoodFacts", fontSize = 11.sp, color = Slate400)
-                        }
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(Emerald500.copy(alpha = 0.2f))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text("v1.0.0", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Emerald400)
+                            Text("100% Offline", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = Emerald300)
+                            Text("Your data lives only on this device.", fontSize = 11.5.sp, color = Color.White.copy(alpha = 0.55f))
                         }
                     }
                 }
@@ -159,77 +203,107 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingLinkRow(
+private fun SettingLinkRow(
     icon: ImageVector,
+    label: String,
+    value: String? = null,
     tint: Color,
-    title: String,
-    subtitle: String,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(tint.copy(alpha = 0.15f))
-                    .padding(8.dp)
-            ) {
-                Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(text = title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text(text = subtitle, fontSize = 11.sp, color = Slate400)
-            }
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(tint.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(17.dp))
         }
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Slate400, modifier = Modifier.size(16.dp))
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = label,
+            fontSize = 13.5.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
+            modifier = Modifier.weight(1f)
+        )
+
+        if (value != null) {
+            Text(
+                text = value,
+                fontSize = 12.sp,
+                color = Color.White.copy(alpha = 0.45f)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+        }
+
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = null,
+            tint = Color.White.copy(alpha = 0.35f),
+            modifier = Modifier.size(16.dp)
+        )
     }
 }
 
 @Composable
-fun SettingToggleRow(
+private fun SettingToggleRow(
     icon: ImageVector,
-    tint: Color,
-    title: String,
-    subtitle: String,
+    label: String,
+    value: String? = null,
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    tint: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(tint.copy(alpha = 0.15f))
-                    .padding(8.dp)
-            ) {
-                Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(18.dp))
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(text = title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text(text = subtitle, fontSize = 11.sp, color = Slate400)
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(tint.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(17.dp))
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                fontSize = 13.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+            if (value != null) {
+                Text(
+                    text = value,
+                    fontSize = 11.sp,
+                    color = Color.White.copy(alpha = 0.45f)
+                )
             }
         }
+
         Switch(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Slate950,
-                checkedTrackColor = Emerald400,
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Emerald500,
                 uncheckedThumbColor = Slate400,
                 uncheckedTrackColor = Slate800
             )

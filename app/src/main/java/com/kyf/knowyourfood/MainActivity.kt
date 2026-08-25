@@ -19,10 +19,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             KYFTheme(darkTheme = true) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Slate950
-                ) {
+                com.kyf.knowyourfood.ui.components.KYFAppBackground {
                     KYFNavHost(app = app)
                 }
             }

@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 // Primary Branding - Emerald & Mint
 val Emerald50 = Color(0xFFECFDF5)
 val Emerald100 = Color(0xFFD1FAE5)
+val Emerald300 = Color(0xFF6EE7B7)
 val Emerald400 = Color(0xFF34D399)
 val Emerald500 = Color(0xFF10B981)
 val Emerald600 = Color(0xFF059669)
