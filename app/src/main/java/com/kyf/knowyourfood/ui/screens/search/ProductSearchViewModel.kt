@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyf.knowyourfood.data.model.ProductItem
 import com.kyf.knowyourfood.data.repository.ProductRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -17,7 +19,7 @@ data class SearchUiState(
     val filterLowSalt: Boolean = false,
     val categories: List<String> = emptyList(),
     val products: List<ProductItem> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = true
 )
 
 class ProductSearchViewModel(
@@ -51,53 +53,80 @@ class ProductSearchViewModel(
         }
     }
 
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeProducts() {
         viewModelScope.launch {
-            _filterParams.flatMapLatest { params ->
-                productRepository.searchProducts(params.query, params.nutriScore, params.category).map { list ->
-                    var filtered = list
+            _filterParams
+                .debounce(300L) // Debounce to prevent rapid recomposition & input lag
+                .onEach { _uiState.update { it.copy(isLoading = true) } }
+                .flatMapLatest { params ->
+                    productRepository.searchProducts(params.query, params.nutriScore, params.category).map { list ->
+                        var filtered = list
 
-                    if (params.allergenFree.isNotBlank()) {
-                        filtered = filtered.filter { p ->
-                            p.allergenTags.contains.none { it.contains(params.allergenFree, ignoreCase = true) } &&
-                            !p.ingredientsText.contains(params.allergenFree, ignoreCase = true)
+                        if (params.allergenFree.isNotBlank()) {
+                            val keywords = getAllergenKeywords(params.allergenFree)
+                            filtered = filtered.filter { p ->
+                                p.allergenTags.contains.none { tag ->
+                                    keywords.any { kw -> tag.contains(kw, ignoreCase = true) }
+                                } && keywords.none { kw ->
+                                    p.ingredientsText.contains(kw, ignoreCase = true)
+                                }
+                            }
                         }
-                    }
 
-                    if (params.highProtein) {
-                        filtered = filtered.filter { p -> p.protein100g >= 10.0 }
-                    }
+                        if (params.highProtein) {
+                            filtered = filtered.filter { p -> p.protein100g >= 10.0 }
+                        }
 
-                    if (params.lowSugar) {
-                        filtered = filtered.filter { p -> p.sugars100g <= 5.0 }
-                    }
+                        if (params.lowSugar) {
+                            filtered = filtered.filter { p -> p.sugars100g <= 5.0 }
+                        }
 
-                    if (params.lowSalt) {
-                        filtered = filtered.filter { p -> p.salt100g <= 0.3 }
-                    }
+                        if (params.lowSalt) {
+                            filtered = filtered.filter { p -> p.salt100g <= 0.3 }
+                        }
 
-                    filtered
+                        filtered
+                    }
+                }.collect { results ->
+                    val p = _filterParams.value
+                    _uiState.update {
+                        it.copy(
+                            query = p.query,
+                            selectedNutriScore = p.nutriScore,
+                            selectedCategory = p.category,
+                            filterAllergenFree = p.allergenFree,
+                            filterHighProtein = p.highProtein,
+                            filterLowSugar = p.lowSugar,
+                            filterLowSalt = p.lowSalt,
+                            products = results,
+                            isLoading = false
+                        )
+                    }
                 }
-            }.collect { results ->
-                val p = _filterParams.value
-                _uiState.update {
-                    it.copy(
-                        query = p.query,
-                        selectedNutriScore = p.nutriScore,
-                        selectedCategory = p.category,
-                        filterAllergenFree = p.allergenFree,
-                        filterHighProtein = p.highProtein,
-                        filterLowSugar = p.lowSugar,
-                        filterLowSalt = p.lowSalt,
-                        products = results,
-                        isLoading = false
-                    )
-                }
-            }
+        }
+    }
+
+    /**
+     * Maps allergen IDs to ingredient text keywords for accurate filtering.
+     */
+    private fun getAllergenKeywords(allergenId: String): List<String> {
+        return when (allergenId.uppercase()) {
+            "GLUTEN" -> listOf("gluten", "wheat", "barley", "rye", "malt", "spelt", "semolina", "durum", "seitan")
+            "MILK" -> listOf("milk", "dairy", "casein", "whey", "butter", "cheese", "cream", "lactose", "yogurt", "ghee", "paneer")
+            "PEANUT" -> listOf("peanut", "peanuts", "groundnut", "arachis")
+            "TREE_NUTS" -> listOf("almond", "walnut", "cashew", "pistachio", "pecan", "hazelnut", "macadamia", "pine nut")
+            "EGG" -> listOf("egg", "eggs", "albumin", "mayonnaise")
+            "SOY", "SOYBEANS" -> listOf("soy", "soya", "soybean", "tofu", "tempeh", "edamame", "soy lecithin")
+            "FISH" -> listOf("fish", "cod", "salmon", "tuna", "anchovy", "sardine")
+            "SESAME" -> listOf("sesame", "tahini")
+            else -> listOf(allergenId.lowercase())
         }
     }
 
     fun onQueryChanged(newQuery: String) {
+        // Immediately update the displayed text for responsive typing
+        _uiState.update { it.copy(query = newQuery) }
         _filterParams.update { it.copy(query = newQuery) }
     }
 
@@ -133,5 +162,6 @@ class ProductSearchViewModel(
 
     fun resetFilters() {
         _filterParams.value = FilterParams()
+        _uiState.update { it.copy(query = "") }
     }
 }

@@ -2,7 +2,6 @@ package com.kyf.knowyourfood.ui.screens.scanner
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kyf.knowyourfood.data.local.entity.ProductEntity
 import com.kyf.knowyourfood.data.local.entity.ProfileEntity
 import com.kyf.knowyourfood.data.model.ProductItem
 import com.kyf.knowyourfood.data.model.SafetyAssessment
@@ -60,23 +59,13 @@ class ScannerViewModel(
             val profile = _uiState.value.activeProfile
 
             if (product != null && profile != null) {
-                val entity = ProductEntity(
-                    barcode = product.barcode,
-                    name = product.name,
-                    brand = product.brand,
-                    category = product.category,
-                    nutriScore = product.nutriScore.letter,
-                    sugars100g = product.sugars100g,
-                    fat100g = product.fat100g,
-                    satFat100g = product.satFat100g,
-                    salt100g = product.salt100g,
-                    protein100g = product.protein100g,
-                    energyKcal100g = product.energyKcal100g,
-                    fiber100g = product.fiber100g,
-                    ingredientsText = product.ingredientsText,
-                    allergensJson = kotlinx.serialization.json.Json.encodeToString(com.kyf.knowyourfood.data.model.AllergenTags.serializer(), product.allergenTags)
-                )
-                val assessment = AllergyEngine.evaluateProductSafety(entity, profile)
+                // Use the entity directly from the repository for engine evaluation
+                // This avoids the anti-pattern of re-serializing domain objects back to entities
+                val entity = productRepository.getProductEntityByBarcode(cleanBarcode)
+                val assessment = if (entity != null) {
+                    AllergyEngine.evaluateProductSafety(entity, profile)
+                } else null
+
                 _uiState.update {
                     it.copy(
                         scannedBarcode = cleanBarcode,
@@ -115,6 +104,10 @@ class ScannerViewModel(
 
     fun closeManualInputDialog() {
         _uiState.update { it.copy(showManualInputDialog = false) }
+    }
+
+    fun dismissError() {
+        _uiState.update { it.copy(errorMessage = null) }
     }
 
     fun resumeScanning() {

@@ -20,6 +20,14 @@ class ProductRepository(private val productDao: ProductDao) {
         return productDao.getProductByBarcode(barcode)?.toDomain()
     }
 
+    /**
+     * Returns the raw ProductEntity for engine evaluation, avoiding
+     * the anti-pattern of deserializing domain objects back to entities.
+     */
+    suspend fun getProductEntityByBarcode(barcode: String): ProductEntity? {
+        return productDao.getProductByBarcode(barcode)
+    }
+
     fun observeProductByBarcode(barcode: String): Flow<ProductItem?> {
         return productDao.observeProductByBarcode(barcode).map { it?.toDomain() }
     }

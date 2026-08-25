@@ -1,12 +1,14 @@
 package com.kyf.knowyourfood.ui.theme
 
 import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -60,8 +62,9 @@ fun KYFTheme(
         SideEffect {
             val window = (view.context as? Activity)?.window
             window?.let {
-                it.statusBarColor = colorScheme.background.toArgb()
-                it.navigationBarColor = colorScheme.background.toArgb()
+                // Use transparent bars for edge-to-edge
+                it.statusBarColor = Color.Transparent.toArgb()
+                it.navigationBarColor = Color.Transparent.toArgb()
                 WindowCompat.getInsetsController(it, view).isAppearanceLightStatusBars = !darkTheme
                 WindowCompat.getInsetsController(it, view).isAppearanceLightNavigationBars = !darkTheme
             }

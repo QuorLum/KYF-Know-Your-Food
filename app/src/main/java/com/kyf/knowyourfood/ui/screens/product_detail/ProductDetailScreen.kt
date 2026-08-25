@@ -4,11 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,7 +28,6 @@ import com.kyf.knowyourfood.ui.components.SafetyAlertBanner
 import com.kyf.knowyourfood.ui.components.TrafficLightBar
 import com.kyf.knowyourfood.ui.theme.*
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,25 +54,13 @@ fun ProductDetailScreen(
             product = p
             activeProfile = currentProfile
             if (currentProfile != null) {
-                // Convert domain ProductItem to entity for evaluation
-                val entity = com.kyf.knowyourfood.data.local.entity.ProductEntity(
-                    barcode = p.barcode,
-                    name = p.name,
-                    brand = p.brand,
-                    category = p.category,
-                    nutriScore = p.nutriScore.letter,
-                    sugars100g = p.sugars100g,
-                    fat100g = p.fat100g,
-                    satFat100g = p.satFat100g,
-                    salt100g = p.salt100g,
-                    protein100g = p.protein100g,
-                    energyKcal100g = p.energyKcal100g,
-                    fiber100g = p.fiber100g,
-                    ingredientsText = p.ingredientsText,
-                    allergensJson = kotlinx.serialization.json.Json.encodeToString(com.kyf.knowyourfood.data.model.AllergenTags.serializer(), p.allergenTags)
-                )
-                safetyAssessment = AllergyEngine.evaluateProductSafety(entity, currentProfile)
-                healthierAlternatives = productRepository.getHealthierAlternatives(entity)
+                // Use entity directly from the repository for engine evaluation
+                // This avoids the anti-pattern of re-serializing domain objects back to entities
+                val entity = productRepository.getProductEntityByBarcode(barcode)
+                if (entity != null) {
+                    safetyAssessment = AllergyEngine.evaluateProductSafety(entity, currentProfile)
+                    healthierAlternatives = productRepository.getHealthierAlternatives(entity)
+                }
             }
         }
         isLoading = false
@@ -87,7 +72,7 @@ fun ProductDetailScreen(
                 title = { Text("Product Analysis", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Slate950)
@@ -214,9 +199,12 @@ fun ProductDetailScreen(
                                     color = Emerald400
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
-                                Row(
+                                // Use wrapping layout for allergen chips
+                                @OptIn(ExperimentalLayoutApi::class)
+                                FlowRow(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     item.allergenTags.contains.forEach {
                                         Box(

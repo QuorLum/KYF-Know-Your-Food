@@ -22,6 +22,7 @@ import com.kyf.knowyourfood.data.model.SafetyAssessment
 import com.kyf.knowyourfood.data.model.SafetyStatus
 import com.kyf.knowyourfood.ui.theme.*
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SafetyAlertBanner(
     assessment: SafetyAssessment,
@@ -81,7 +82,7 @@ fun SafetyAlertBanner(
             }
         }
 
-        // Direct Allergen Conflict Tags (RED)
+        // Direct Allergen Conflict Tags (RED) — FlowRow for wrapping
         if (assessment.directAllergenMatches.isNotEmpty()) {
             Spacer(modifier = Modifier.height(10.dp))
             Text(
@@ -91,9 +92,10 @@ fun SafetyAlertBanner(
                 color = TrafficRed
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 assessment.directAllergenMatches.forEach { match ->
                     RiskChip(text = "${match.triggerName} (${match.matchedTerm})", color = TrafficRed)
@@ -142,7 +144,7 @@ fun SafetyAlertBanner(
             }
         }
 
-        // Precautionary Traces (AMBER)
+        // Precautionary Traces (AMBER) — FlowRow for wrapping
         if (assessment.traceAllergenMatches.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -152,9 +154,10 @@ fun SafetyAlertBanner(
                 color = TrafficYellow
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 assessment.traceAllergenMatches.forEach { match ->
                     RiskChip(text = "May contain ${match.triggerName}", color = TrafficYellow)

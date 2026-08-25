@@ -1,5 +1,7 @@
 package com.kyf.knowyourfood.ui.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -54,15 +56,19 @@ fun KYFNavHost(
         Screen.Profiles
     )
 
+    // Determine whether to show bottom bar
+    val showBottomBar = currentRoute != Screen.ProductDetail.route && currentRoute != "plate_view"
+
     Scaffold(
         bottomBar = {
-            if (currentRoute != Screen.ProductDetail.route && currentRoute != "plate_view") {
+            if (showBottomBar) {
                 NavigationBar(
                     containerColor = Slate900,
                     tonalElevation = 8.dp,
                     modifier = Modifier
                         .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                         .border(1.dp, Slate800, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                        .navigationBarsPadding()
                 ) {
                     bottomBarScreens.forEach { screen ->
                         val isSelected = currentRoute == screen.route
@@ -149,7 +155,25 @@ fun KYFNavHost(
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                fadeIn(animationSpec = tween(200)) + slideInHorizontally(
+                    initialOffsetX = { it / 6 },
+                    animationSpec = tween(200)
+                )
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(150))
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(200)) + slideInHorizontally(
+                    initialOffsetX = { -it / 6 },
+                    animationSpec = tween(200)
+                )
+            },
+            popExitTransition = {
+                fadeOut(animationSpec = tween(150))
+            }
         ) {
             composable(Screen.Home.route) {
                 val viewModel: HomeViewModel = viewModel {

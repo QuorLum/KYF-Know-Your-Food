@@ -1,5 +1,6 @@
 package com.kyf.knowyourfood.ui.screens.search
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -17,7 +20,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,14 +38,31 @@ fun ProductSearchScreen(
     onProductClick: (String) -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Slate950)
+            .statusBarsPadding()
             .padding(top = 16.dp, start = 16.dp, end = 16.dp)
     ) {
-        // Search Bar
+        // Page Title
+        Text(
+            text = "Search Products",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+        Text(
+            text = "Browse by name, brand, barcode or nutrition filters",
+            fontSize = 12.sp,
+            color = Slate400
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Search Bar — with proper keyboard action
         OutlinedTextField(
             value = state.query,
             onValueChange = { text -> viewModel.onQueryChanged(text) },
@@ -57,13 +79,18 @@ fun ProductSearchScreen(
             },
             singleLine = true,
             shape = RoundedCornerShape(14.dp),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = { focusManager.clearFocus() }
+            ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Slate900,
                 unfocusedContainerColor = Slate900,
                 focusedBorderColor = Emerald500,
                 unfocusedBorderColor = Slate700,
                 focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
+                unfocusedTextColor = Color.White,
+                cursorColor = Emerald400
             ),
             modifier = Modifier.fillMaxWidth()
         )
@@ -210,17 +237,74 @@ fun ProductSearchScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Products List
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 90.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(state.products, key = { product: ProductItem -> product.barcode }) { product: ProductItem ->
-                ProductListItemCard(
-                    product = product,
-                    onClick = { onProductClick(product.barcode) }
-                )
+        // Content area with loading state
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(
+                            color = Emerald400,
+                            strokeWidth = 3.dp,
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Searching local database...",
+                            fontSize = 13.sp,
+                            color = Slate400
+                        )
+                    }
+                }
+            } else if (state.products.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = Slate600,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "No Products Found",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Slate400
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (state.query.isNotEmpty()) "Try adjusting your search query or filters."
+                                   else "Start typing to search the local product database.",
+                            fontSize = 13.sp,
+                            color = Slate500,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+            } else {
+                // Products List
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(state.products, key = { product: ProductItem -> product.barcode }) { product: ProductItem ->
+                        ProductListItemCard(
+                            product = product,
+                            onClick = { onProductClick(product.barcode) }
+                        )
+                    }
+                }
             }
         }
     }

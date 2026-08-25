@@ -1,5 +1,6 @@
 package com.kyf.knowyourfood.ui.screens.home
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,6 +31,7 @@ import com.kyf.knowyourfood.ui.components.GlassmorphicCard
 import com.kyf.knowyourfood.ui.components.MacroPill
 import com.kyf.knowyourfood.ui.components.NutriScoreBadge
 import com.kyf.knowyourfood.ui.theme.*
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 
 @Composable
 fun HomeScreen(
@@ -42,12 +44,29 @@ fun HomeScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
+    if (state.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Slate950),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(color = Emerald400, strokeWidth = 3.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Loading your dashboard...", fontSize = 14.sp, color = Slate400)
+            }
+        }
+        return
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Slate950)
+            .statusBarsPadding()
             .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 90.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // 1. Header with Active Profile Switcher
@@ -84,7 +103,7 @@ fun HomeScreen(
             )
         }
 
-        // 5. Featured Healthy Alternatives Swaps
+        // 5. Featured Healthy Alternatives Swaps (guarded against empty states)
         if (state.featuredHealthySwaps.isNotEmpty()) {
             item {
                 Text(
@@ -95,7 +114,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    state.featuredHealthySwaps.forEach { (bad, good) ->
+                    state.featuredHealthySwaps.take(3).forEach { (bad, good) ->
                         HealthySwapCard(
                             unhealthyProduct = bad,
                             healthyAlternative = good,
@@ -108,34 +127,36 @@ fun HomeScreen(
         }
 
         // 6. Popular Discoverable Products Carousel
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Popular Products to Scan",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = "Explore All",
-                    fontSize = 13.sp,
-                    color = Emerald400,
-                    modifier = Modifier.clickable(onClick = onNavigateToSearch)
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(state.recentProducts) { product ->
-                    ProductMiniCard(
-                        product = product,
-                        onClick = { onNavigateToProductDetail(product.barcode) }
+        if (state.recentProducts.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Products in Database",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
+                    Text(
+                        text = "Explore All",
+                        fontSize = 13.sp,
+                        color = Emerald400,
+                        modifier = Modifier.clickable(onClick = onNavigateToSearch)
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.recentProducts) { product ->
+                        ProductMiniCard(
+                            product = product,
+                            onClick = { onNavigateToProductDetail(product.barcode) }
+                        )
+                    }
                 }
             }
         }
@@ -183,41 +204,43 @@ fun HeaderSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        if (profiles.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(14.dp))
 
-        // Profile Selector Pills
-        Text(
-            text = "Active Family Member:",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = Slate400
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(profiles) { profile ->
-                val isSelected = activeProfile?.id == profile.id
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(if (isSelected) Emerald500 else Slate850)
-                        .border(1.dp, if (isSelected) Emerald400 else Slate700, RoundedCornerShape(20.dp))
-                        .clickable { onProfileSelected(profile) }
-                        .padding(horizontal = 14.dp, vertical = 7.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = if (profile.age < 12) Icons.Default.ChildCare else Icons.Default.Person,
-                            contentDescription = null,
-                            tint = if (isSelected) Slate950 else Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = profile.name,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Slate950 else Color.White
-                        )
+            // Profile Selector Pills
+            Text(
+                text = "Active Family Member:",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = Slate400
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(profiles) { profile ->
+                    val isSelected = activeProfile?.id == profile.id
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(if (isSelected) Emerald500 else Slate850)
+                            .border(1.dp, if (isSelected) Emerald400 else Slate700, RoundedCornerShape(20.dp))
+                            .clickable { onProfileSelected(profile) }
+                            .padding(horizontal = 14.dp, vertical = 7.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (profile.age < 12) Icons.Default.ChildCare else Icons.Default.Person,
+                                contentDescription = null,
+                                tint = if (isSelected) Slate950 else Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = profile.name,
+                                fontSize = 13.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) Slate950 else Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -482,7 +505,7 @@ fun HealthySwapCard(
                 }
 
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Swap To",
                     tint = Emerald400,
                     modifier = Modifier.padding(horizontal = 8.dp)

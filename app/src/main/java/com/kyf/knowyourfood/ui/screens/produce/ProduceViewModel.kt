@@ -7,6 +7,8 @@ import com.kyf.knowyourfood.data.model.RawFoodItem
 import com.kyf.knowyourfood.data.repository.PlateRepository
 import com.kyf.knowyourfood.data.repository.ProfileRepository
 import com.kyf.knowyourfood.data.repository.RawFoodRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -31,7 +33,7 @@ data class ProduceUiState(
     val customServingGrams: Double = 100.0,
     val activeProfile: ProfileEntity? = null,
     val addedSuccessMessage: String? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = true
 )
 
 class ProduceViewModel(
@@ -70,16 +72,19 @@ class ProduceViewModel(
         }
     }
 
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun observeRawFoods() {
         viewModelScope.launch {
             combine(
-                _query,
+                _query.debounce(300L), // Debounce search query to prevent input lag
                 _selectedCategory,
                 _nutrientFilter,
                 _sourceFilter
             ) { q, cat, nFilter, src ->
                 ProduceFilterParams(q, cat, nFilter, src)
-            }.flatMapLatest { params ->
+            }
+            .onEach { _uiState.update { it.copy(isLoading = true) } }
+            .flatMapLatest { params ->
                 rawFoodRepository.searchRawFoods(params.query, params.category).map { list ->
                     var filtered = list
 
@@ -113,6 +118,8 @@ class ProduceViewModel(
     }
 
     fun onQueryChanged(newQuery: String) {
+        // Immediately update the displayed text for responsive typing
+        _uiState.update { it.copy(query = newQuery) }
         _query.value = newQuery
     }
 

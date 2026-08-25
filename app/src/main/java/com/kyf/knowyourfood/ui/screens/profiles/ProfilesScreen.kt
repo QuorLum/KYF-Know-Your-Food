@@ -25,7 +25,7 @@ import com.kyf.knowyourfood.ui.components.GlassmorphicCard
 import com.kyf.knowyourfood.ui.theme.*
 import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ProfilesScreen(
     viewModel: ProfilesViewModel
@@ -57,7 +57,7 @@ fun ProfilesScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 10.dp, bottom = 90.dp),
+            contentPadding = PaddingValues(top = 10.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
@@ -104,6 +104,7 @@ fun ProfilesScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ProfileCard(
     profile: ProfileEntity,
@@ -168,13 +169,14 @@ fun ProfileCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Configured Allergens
+            // Configured Allergens — FlowRow for wrapping
             if (allergyProfile.allergens.isNotEmpty()) {
                 Text(text = "Allergies:", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TrafficRed)
                 Spacer(modifier = Modifier.height(4.dp))
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     allergyProfile.allergens.forEach {
                         Box(
@@ -190,11 +192,12 @@ fun ProfileCard(
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
-            // Configured Pollen / Conditions
+            // Configured Pollen / Conditions — FlowRow for wrapping
             if (allergyProfile.pollenSensitivities.isNotEmpty() || allergyProfile.conditions.isNotEmpty()) {
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     allergyProfile.pollenSensitivities.forEach {
                         Box(
