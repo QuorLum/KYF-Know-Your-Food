@@ -27,8 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyf.knowyourfood.data.model.ProductItem
-import com.kyf.knowyourfood.ui.components.GlassmorphicCard
-import com.kyf.knowyourfood.ui.components.NutriScoreBadge
+import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -315,6 +314,14 @@ fun ProductListItemCard(
     product: ProductItem,
     onClick: () -> Unit
 ) {
+    val imageUrl = FoodImageHelper.getProductImageUrl(
+        barcode = product.barcode,
+        name = product.name,
+        brand = product.brand,
+        category = product.category
+    )
+    val emoji = FoodImageHelper.getProductEmoji(product.category, product.name)
+
     GlassmorphicCard(
         modifier = Modifier.fillMaxWidth(),
         backgroundColor = Slate900,
@@ -323,15 +330,26 @@ fun ProductListItemCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Product Image Thumbnail
+            FoodImageThumbnail(
+                imageUrl = imageUrl,
+                fallbackEmoji = emoji,
+                size = 56.dp,
+                contentDescription = product.name
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = product.brand,
-                    fontSize = 11.sp,
-                    color = Slate400
+                    text = product.brand.uppercase(),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Emerald400
                 )
                 Text(
                     text = product.name,
@@ -366,7 +384,7 @@ fun ProductListItemCard(
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
             NutriScoreBadge(grade = product.nutriScore, compact = true)
         }

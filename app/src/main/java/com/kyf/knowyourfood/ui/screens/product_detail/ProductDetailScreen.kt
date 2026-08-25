@@ -22,10 +22,7 @@ import com.kyf.knowyourfood.data.model.SafetyAssessment
 import com.kyf.knowyourfood.data.repository.ProductRepository
 import com.kyf.knowyourfood.data.repository.ProfileRepository
 import com.kyf.knowyourfood.domain.engine.AllergyEngine
-import com.kyf.knowyourfood.ui.components.GlassmorphicCard
-import com.kyf.knowyourfood.ui.components.NutriScoreBadge
-import com.kyf.knowyourfood.ui.components.SafetyAlertBanner
-import com.kyf.knowyourfood.ui.components.TrafficLightBar
+import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
 import kotlinx.coroutines.flow.firstOrNull
 
@@ -99,13 +96,28 @@ fun ProductDetailScreen(
                 contentPadding = PaddingValues(bottom = 40.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Product Header Card
+                // Product Header Card with Hero Image Banner
                 item {
                     GlassmorphicCard(
                         modifier = Modifier.fillMaxWidth(),
                         backgroundColor = Slate900
                     ) {
-                        Column(modifier = Modifier.padding(18.dp)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            // Hero Product Image
+                            FoodImageBanner(
+                                imageUrl = FoodImageHelper.getProductImageUrl(
+                                    barcode = item.barcode,
+                                    name = item.name,
+                                    brand = item.brand,
+                                    category = item.category
+                                ),
+                                fallbackEmoji = FoodImageHelper.getProductEmoji(item.category, item.name),
+                                height = 160.dp,
+                                contentDescription = item.name
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -271,6 +283,14 @@ fun ProductDetailScreen(
                         Spacer(modifier = Modifier.height(10.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             healthierAlternatives.forEach { alt ->
+                                val altImageUrl = FoodImageHelper.getProductImageUrl(
+                                    barcode = alt.barcode,
+                                    name = alt.name,
+                                    brand = alt.brand,
+                                    category = alt.category
+                                )
+                                val altEmoji = FoodImageHelper.getProductEmoji(alt.category, alt.name)
+
                                 GlassmorphicCard(
                                     modifier = Modifier.fillMaxWidth(),
                                     backgroundColor = Slate900,
@@ -279,15 +299,27 @@ fun ProductDetailScreen(
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(12.dp),
+                                            .padding(10.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
+                                        FoodImageThumbnail(
+                                            imageUrl = altImageUrl,
+                                            fallbackEmoji = altEmoji,
+                                            size = 46.dp,
+                                            contentDescription = alt.name
+                                        )
+
+                                        Spacer(modifier = Modifier.width(10.dp))
+
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(text = alt.brand, fontSize = 11.sp, color = Slate400)
+                                            Text(text = alt.brand.uppercase(), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Emerald400)
                                             Text(text = alt.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                             Text(text = "Sugar: ${alt.sugars100g}g • Salt: ${alt.salt100g}g", fontSize = 11.sp, color = Slate300)
                                         }
+
+                                        Spacer(modifier = Modifier.width(8.dp))
+
                                         NutriScoreBadge(grade = alt.nutriScore, compact = true)
                                     }
                                 }

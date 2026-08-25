@@ -37,10 +37,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import com.kyf.knowyourfood.ui.components.GlassmorphicCard
-import com.kyf.knowyourfood.ui.components.NutriScoreBadge
-import com.kyf.knowyourfood.ui.components.SafetyAlertBanner
-import com.kyf.knowyourfood.ui.components.TrafficLightBar
+import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
 import java.util.concurrent.Executors
 
@@ -317,19 +314,37 @@ fun BarcodeScannerScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        FoodImageThumbnail(
+                            imageUrl = FoodImageHelper.getProductImageUrl(
+                                barcode = product.barcode,
+                                name = product.name,
+                                brand = product.brand,
+                                category = product.category
+                            ),
+                            fallbackEmoji = FoodImageHelper.getProductEmoji(product.category, product.name),
+                            size = 54.dp,
+                            contentDescription = product.name
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = product.brand,
-                                fontSize = 12.sp,
-                                color = Slate400
+                                text = product.brand.uppercase(),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Emerald400
                             )
                             Text(
                                 text = product.name,
-                                fontSize = 18.sp,
+                                fontSize = 17.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
                         NutriScoreBadge(grade = product.nutriScore, compact = true)
                     }
 

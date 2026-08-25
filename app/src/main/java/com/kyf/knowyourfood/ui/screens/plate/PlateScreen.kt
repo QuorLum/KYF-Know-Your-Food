@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,9 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyf.knowyourfood.data.model.PlateItemWithFood
 import com.kyf.knowyourfood.data.model.RecommendedRecipe
-import com.kyf.knowyourfood.ui.components.GlassmorphicCard
-import com.kyf.knowyourfood.ui.components.MacroPill
-import com.kyf.knowyourfood.ui.components.ServingSlider
+import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,7 +49,7 @@ fun PlateScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -315,6 +314,9 @@ fun PlateItemCard(
     onRemove: () -> Unit
 ) {
     val s = item.scaledNutrition
+    val imageUrl = FoodImageHelper.getProduceImageUrl(item.foodItem.name, item.foodItem.category)
+    val emoji = FoodImageHelper.getProduceEmoji(item.foodItem.name, item.foodItem.category)
+
     GlassmorphicCard(
         modifier = Modifier.fillMaxWidth(),
         backgroundColor = Slate900
@@ -322,10 +324,19 @@ fun PlateItemCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            FoodImageThumbnail(
+                imageUrl = imageUrl,
+                fallbackEmoji = emoji,
+                size = 46.dp,
+                contentDescription = item.foodItem.name
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.foodItem.name,

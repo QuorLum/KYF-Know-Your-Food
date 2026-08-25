@@ -27,9 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyf.knowyourfood.data.local.entity.ProfileEntity
 import com.kyf.knowyourfood.data.model.ProductItem
-import com.kyf.knowyourfood.ui.components.GlassmorphicCard
-import com.kyf.knowyourfood.ui.components.MacroPill
-import com.kyf.knowyourfood.ui.components.NutriScoreBadge
+import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 
@@ -487,46 +485,76 @@ fun HealthySwapCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Unhealthy Item
-                Column(
+                Row(
                     modifier = Modifier
                         .weight(1f)
-                        .clickable(onClick = onClickUnhealthy)
+                        .clickable(onClick = onClickUnhealthy),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = unhealthyProduct.name,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    FoodImageThumbnail(
+                        imageUrl = FoodImageHelper.getProductImageUrl(
+                            barcode = unhealthyProduct.barcode,
+                            name = unhealthyProduct.name,
+                            brand = unhealthyProduct.brand,
+                            category = unhealthyProduct.category
+                        ),
+                        fallbackEmoji = FoodImageHelper.getProductEmoji(unhealthyProduct.category, unhealthyProduct.name),
+                        size = 38.dp,
+                        contentDescription = unhealthyProduct.name
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    NutriScoreBadge(grade = unhealthyProduct.nutriScore, compact = true)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = unhealthyProduct.name,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        NutriScoreBadge(grade = unhealthyProduct.nutriScore, compact = true)
+                    }
                 }
 
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Swap To",
                     tint = Emerald400,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = 6.dp)
                 )
 
                 // Healthy Item
-                Column(
+                Row(
                     modifier = Modifier
                         .weight(1f)
-                        .clickable(onClick = onClickHealthy)
+                        .clickable(onClick = onClickHealthy),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = healthyAlternative.name,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Emerald400,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    FoodImageThumbnail(
+                        imageUrl = FoodImageHelper.getProductImageUrl(
+                            barcode = healthyAlternative.barcode,
+                            name = healthyAlternative.name,
+                            brand = healthyAlternative.brand,
+                            category = healthyAlternative.category
+                        ),
+                        fallbackEmoji = FoodImageHelper.getProductEmoji(healthyAlternative.category, healthyAlternative.name),
+                        size = 38.dp,
+                        contentDescription = healthyAlternative.name
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    NutriScoreBadge(grade = healthyAlternative.nutriScore, compact = true)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = healthyAlternative.name,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Emerald400,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        NutriScoreBadge(grade = healthyAlternative.nutriScore, compact = true)
+                    }
                 }
             }
         }
@@ -538,28 +566,45 @@ fun ProductMiniCard(
     product: ProductItem,
     onClick: () -> Unit
 ) {
+    val imageUrl = FoodImageHelper.getProductImageUrl(
+        barcode = product.barcode,
+        name = product.name,
+        brand = product.brand,
+        category = product.category
+    )
+    val emoji = FoodImageHelper.getProductEmoji(product.category, product.name)
+
     GlassmorphicCard(
         modifier = Modifier
             .width(160.dp)
-            .height(140.dp),
+            .height(175.dp),
         backgroundColor = Slate900,
         onClick = onClick
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(10.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            FoodImageThumbnail(
+                imageUrl = imageUrl,
+                fallbackEmoji = emoji,
+                size = 48.dp,
+                contentDescription = product.name,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Column {
                 Text(
-                    text = product.brand,
-                    fontSize = 11.sp,
-                    color = Slate400
+                    text = product.brand.uppercase(),
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Emerald400
                 )
                 Text(
                     text = product.name,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White,
                     maxLines = 2,

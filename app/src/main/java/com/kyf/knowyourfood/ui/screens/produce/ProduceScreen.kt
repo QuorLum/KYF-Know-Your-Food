@@ -25,9 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyf.knowyourfood.data.model.RawFoodItem
-import com.kyf.knowyourfood.ui.components.GlassmorphicCard
-import com.kyf.knowyourfood.ui.components.MacroPill
-import com.kyf.knowyourfood.ui.components.ServingSlider
+import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -305,12 +303,20 @@ fun ProduceScreen(
                             .navigationBarsPadding(),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        // Food Image Hero Banner
+                        FoodImageBanner(
+                            imageUrl = FoodImageHelper.getProduceImageUrl(food.name, food.category),
+                            fallbackEmoji = FoodImageHelper.getProduceEmoji(food.name, food.category),
+                            height = 140.dp,
+                            contentDescription = food.name
+                        )
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = food.category.uppercase(),
                                     fontSize = 11.sp,
@@ -404,6 +410,9 @@ fun RawFoodCard(
     food: RawFoodItem,
     onAddToPlate: () -> Unit
 ) {
+    val imageUrl = FoodImageHelper.getProduceImageUrl(food.name, food.category)
+    val emoji = FoodImageHelper.getProduceEmoji(food.name, food.category)
+
     GlassmorphicCard(
         modifier = Modifier.fillMaxWidth(),
         backgroundColor = Slate900
@@ -414,6 +423,16 @@ fun RawFoodCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Produce Image Thumbnail
+                FoodImageThumbnail(
+                    imageUrl = imageUrl,
+                    fallbackEmoji = emoji,
+                    size = 50.dp,
+                    contentDescription = food.name
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
