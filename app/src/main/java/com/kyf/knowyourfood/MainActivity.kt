@@ -1,11 +1,16 @@
 package com.kyf.knowyourfood
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
+import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -13,6 +18,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
@@ -51,6 +57,8 @@ class MainActivity : ComponentActivity() {
                 cacheMode = WebSettings.LOAD_DEFAULT
                 mediaPlaybackRequiresUserGesture = false
             }
+
+            addJavascriptInterface(WebAppInterface(), "Android")
 
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(
@@ -94,6 +102,39 @@ class MainActivity : ComponentActivity() {
                 }
             }
         })
+    }
+
+    inner class WebAppInterface {
+        @JavascriptInterface
+        fun vibrate(durationMs: Long) {
+            val vibrator = getSystemService(VIBRATOR_SERVICE) as? Vibrator
+            vibrator?.let {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    it.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.vibrate(durationMs)
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun showToast(message: String) {
+            runOnUiThread {
+                Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        @JavascriptInterface
+        fun shareText(title: String, text: String) {
+            val sendIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TITLE, title)
+                putExtra(Intent.EXTRA_TEXT, text)
+                type = "text/plain"
+            }
+            startActivity(Intent.createChooser(sendIntent, title))
+        }
     }
 
     override fun onDestroy() {
