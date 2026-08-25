@@ -92,13 +92,18 @@ class MainActivity : ComponentActivity() {
 
         setContentView(webView)
 
+        // Native Android Back Navigation connected to React Navigation Stack
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (webView.canGoBack()) {
-                    webView.goBack()
-                } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
+                webView.evaluateJavascript("window.handleAndroidBack ? window.handleAndroidBack() : false") { result ->
+                    // result is string "true" if React handled the back action, "false" if on root screen
+                    val handled = result?.replace("\"", "")?.trim() == "true"
+                    if (!handled) {
+                        // At root home screen -> exit/minimize activity
+                        isEnabled = false
+                        onBackPressedDispatcher.onBackPressed()
+                        isEnabled = true
+                    }
                 }
             }
         })
