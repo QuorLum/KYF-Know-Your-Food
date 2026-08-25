@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration for KYF - Know Your Food
+    Enforces HTTPS-only connections for all network traffic.
+    Cleartext (HTTP) is explicitly disabled for security.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
