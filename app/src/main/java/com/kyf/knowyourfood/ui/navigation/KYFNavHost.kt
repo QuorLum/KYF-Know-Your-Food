@@ -231,7 +231,8 @@ fun KYFNavHost(
                 }
                 PlateScreen(
                     viewModel = viewModel,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToProduce = { navController.navigate(Screen.Produce.route) }
                 )
             }
 

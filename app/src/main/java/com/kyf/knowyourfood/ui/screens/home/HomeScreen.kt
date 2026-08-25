@@ -77,9 +77,12 @@ fun HomeScreen(
             )
         }
 
-        // 2. Central Quick Scan Hero Card (Call-To-Action)
+        // 2. Global Nutrition Explorer & Quick Search Hub (No duplicate scan button)
         item {
-            ScanHeroBanner(onScanClick = onNavigateToScanner)
+            QuickDiscoveryBanner(
+                onSearchClick = onNavigateToSearch,
+                onExploreProduce = onNavigateToProduce
+            )
         }
 
         // 3. Active Profile Allergy Alert Overview
@@ -247,68 +250,126 @@ fun HeaderSection(
 }
 
 @Composable
-fun ScanHeroBanner(onScanClick: () -> Unit) {
+fun QuickDiscoveryBanner(
+    onSearchClick: () -> Unit,
+    onExploreProduce: () -> Unit
+) {
     GlassmorphicCard(
         modifier = Modifier.fillMaxWidth(),
-        backgroundColor = Slate900,
-        borderColor = Emerald500.copy(alpha = 0.4f),
-        onClick = onScanClick
+        backgroundColor = Slate900
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
                     Brush.horizontalGradient(
-                        colors = listOf(Emerald500.copy(alpha = 0.15f), Color.Transparent)
+                        colors = listOf(Emerald500.copy(alpha = 0.12f), Color.Transparent)
                     )
                 )
-                .padding(18.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(16.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Emerald500)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = "OFFLINE-READY",
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Slate950
-                        )
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Global Nutrition Explorer",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "3M+ global products & USDA/INDB whole foods",
+                        fontSize = 11.sp,
+                        color = Slate400
+                    )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Scan Any Food Barcode",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = "Instant allergen safety rating & front-of-pack traffic lights.",
-                    fontSize = 12.sp,
-                    color = Slate300
-                )
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Emerald500.copy(alpha = 0.2f))
+                        .border(1.dp, Emerald500, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "GLOBAL SYNC",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Emerald400
+                    )
+                }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Quick Search Searchbar Bar
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Emerald500),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Slate800)
+                    .border(1.dp, GlassBorderDark, RoundedCornerShape(12.dp))
+                    .clickable(onClick = onSearchClick)
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.QrCodeScanner,
-                    contentDescription = "Scan",
-                    tint = Slate950,
-                    modifier = Modifier.size(28.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = Slate400,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Search any product, brand, or ingredient...",
+                            fontSize = 12.sp,
+                            color = Slate400
+                        )
+                    }
+
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = Emerald400,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Quick Category Shortcuts
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onExploreProduce,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Text("🥦 Whole Foods", fontSize = 11.sp)
+                }
+
+                OutlinedButton(
+                    onClick = onSearchClick,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Text("📦 Packaged Goods", fontSize = 11.sp)
+                }
             }
         }
     }

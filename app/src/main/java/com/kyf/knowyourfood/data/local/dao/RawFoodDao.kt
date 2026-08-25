@@ -23,6 +23,9 @@ interface RawFoodDao {
     """)
     fun searchRawFoods(query: String, category: String): Flow<List<RawFoodEntity>>
 
+    @Query("SELECT * FROM raw_foods WHERE name LIKE '%' || :name || '%' LIMIT 1")
+    suspend fun findRawFoodByName(name: String): RawFoodEntity?
+
     @Query("SELECT DISTINCT category FROM raw_foods ORDER BY category ASC")
     fun getAllProduceCategories(): Flow<List<String>>
 

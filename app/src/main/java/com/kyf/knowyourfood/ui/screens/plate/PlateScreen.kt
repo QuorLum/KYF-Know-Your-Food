@@ -1,6 +1,15 @@
 package com.kyf.knowyourfood.ui.screens.plate
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +26,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyf.knowyourfood.data.model.PlateItemWithFood
 import com.kyf.knowyourfood.data.model.RecommendedRecipe
+import com.kyf.knowyourfood.domain.ai.RecognizedFoodItem
 import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
 
@@ -31,12 +43,59 @@ import com.kyf.knowyourfood.ui.theme.*
 @Composable
 fun PlateScreen(
     viewModel: PlateViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToProduce: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Camera Photo Launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            viewModel.analyzeMealPhoto(bitmap)
+        }
+    }
+
+    // Gallery Photo Picker Launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val bitmap = try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                        decoder.isMutableRequired = true
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                }
+            } catch (e: Exception) {
+                null
+            }
+            if (bitmap != null) {
+                viewModel.analyzeMealPhoto(bitmap)
+            }
+        }
+    }
+
+    // Show error snackbar if AI analysis fails
+    LaunchedEffect(state.aiErrorMessage) {
+        state.aiErrorMessage?.let { msg ->
+            snackbarHostState.showSnackbar(
+                message = msg,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.dismissAiError()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -118,11 +177,12 @@ fun PlateScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Emerald500.copy(alpha = 0.2f))
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .border(1.dp, Emerald500, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = "${state.totals?.totalGrams?.toInt() ?: 0}g Total",
-                                fontSize = 14.sp,
+                                text = "${String.format("%.0f", state.totals?.totalGrams ?: 0.0)}g Total",
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Emerald400
                             )
@@ -131,70 +191,147 @@ fun PlateScreen(
                 }
             }
 
-            // Aggregated Nutrition Breakdown
-            if (state.totals != null && state.plateItems.isNotEmpty()) {
-                item {
-                    val t = state.totals!!
-                    GlassmorphicCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        backgroundColor = Slate900
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "Aggregated Plate Nutrition",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            // Macronutrients
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                MacroPill(label = "Calories", value = "${t.totalCaloriesKcal.toInt()} kcal", accentColor = Emerald400, modifier = Modifier.weight(1f))
-                                MacroPill(label = "Protein", value = "${String.format("%.1f", t.totalProteinG)}g", accentColor = Cyan400, modifier = Modifier.weight(1f))
-                                MacroPill(label = "Carbs", value = "${String.format("%.1f", t.totalCarbsG)}g", accentColor = Color.White, modifier = Modifier.weight(1f))
-                                MacroPill(label = "Fiber", value = "${String.format("%.1f", t.totalFiberG)}g", accentColor = TrafficYellow, modifier = Modifier.weight(1f))
+            // AI Meal Plate Vision Scanner Action Hub
+            item {
+                GlassmorphicCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = Slate900
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = "📸", fontSize = 18.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = "AI Meal Photo Scanner",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = "Auto-detect foods & portions with Gemini Vision",
+                                        fontSize = 11.sp,
+                                        color = Slate400
+                                    )
+                                }
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Micronutrients
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Emerald500.copy(alpha = 0.15f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                MacroPill(label = "Iron", value = "${String.format("%.1f", t.totalIronMg)}mg", accentColor = Color(0xFFF472B6), modifier = Modifier.weight(1f))
-                                MacroPill(label = "Vit C", value = "${String.format("%.1f", t.totalVitCMg)}mg", accentColor = Color(0xFF60A5FA), modifier = Modifier.weight(1f))
-                                MacroPill(label = "Potassium", value = "${t.totalPotassiumMg.toInt()}mg", accentColor = Color(0xFFA78BFA), modifier = Modifier.weight(1f))
-                                MacroPill(label = "Calcium", value = "${t.totalCalciumMg.toInt()}mg", accentColor = Color(0xFF34D399), modifier = Modifier.weight(1f))
+                                Text(text = "AI VISION", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Emerald400)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                onClick = { cameraLauncher.launch(null) },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950),
+                                enabled = !state.isAiAnalyzing
+                            ) {
+                                Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Take Photo", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            OutlinedButton(
+                                onClick = { galleryLauncher.launch("image/*") },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                                enabled = !state.isAiAnalyzing
+                            ) {
+                                Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Pick Gallery", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        if (state.isAiAnalyzing) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Slate800)
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Emerald400,
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Analyzing plate ingredients with Gemini AI...",
+                                    fontSize = 12.sp,
+                                    color = Slate200
+                                )
                             }
                         }
                     }
                 }
+            }
 
-                // Upper Limit (UL) Safety Alerts
-                if (state.totals!!.upperLimitAlerts.isNotEmpty()) {
+            // Real-Time Aggregate Macronutrients Grid
+            if (state.totals != null && state.plateItems.isNotEmpty()) {
+                val t = state.totals!!
+                item {
+                    Text(text = "Total Plate Nutrition", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            MacroPill(label = "Calories", value = "${t.totalCaloriesKcal.toInt()} kcal", accentColor = Color.White, modifier = Modifier.weight(1f))
+                            MacroPill(label = "Protein", value = "${String.format("%.1f", t.totalProteinG)}g", accentColor = Cyan400, modifier = Modifier.weight(1f))
+                            MacroPill(label = "Carbs", value = "${String.format("%.1f", t.totalCarbsG)}g", accentColor = Emerald400, modifier = Modifier.weight(1f))
+                            MacroPill(label = "Fiber", value = "${String.format("%.1f", t.totalFiberG)}g", accentColor = TrafficYellow, modifier = Modifier.weight(1f))
+                        }
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            MacroPill(label = "Iron", value = "${String.format("%.1f", t.totalIronMg)}mg", accentColor = Color(0xFFF472B6), modifier = Modifier.weight(1f))
+                            MacroPill(label = "Vit C", value = "${String.format("%.1f", t.totalVitCMg)}mg", accentColor = Color(0xFF60A5FA), modifier = Modifier.weight(1f))
+                            MacroPill(label = "Potassium", value = "${t.totalPotassiumMg.toInt()}mg", accentColor = Color(0xFFA78BFA), modifier = Modifier.weight(1f))
+                            MacroPill(label = "Calcium", value = "${t.totalCalciumMg.toInt()}mg", accentColor = Color(0xFF34D399), modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+
+                // Tolerable Upper Limit (UL) Safety Warnings
+                if (t.upperLimitAlerts.isNotEmpty()) {
                     item {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            state.totals!!.upperLimitAlerts.forEach { alert ->
-                                Row(
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            t.upperLimitAlerts.forEach { alert ->
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(Color(0x33EF4444))
-                                        .border(1.dp, TrafficRed, RoundedCornerShape(10.dp))
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(TrafficRed.copy(alpha = 0.15f))
+                                        .border(1.dp, TrafficRed, RoundedCornerShape(12.dp))
+                                        .padding(14.dp)
                                 ) {
-                                    Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = TrafficRed, modifier = Modifier.size(20.dp))
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = alert.message,
-                                        fontSize = 12.sp,
-                                        color = Color.White
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(text = "⚠️", fontSize = 18.sp)
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Column {
+                                            Text(text = "High ${alert.nutrientName} Warning", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TrafficRed)
+                                            Text(text = alert.message, fontSize = 11.sp, color = Slate200)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -202,16 +339,23 @@ fun PlateScreen(
                 }
             }
 
-            // Plate Items List
+            // Plate Ingredients List Header
             item {
-                Text(
-                    text = "Items on Your Plate",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Ingredients on Plate", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    TextButton(onClick = onNavigateToProduce) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Emerald400, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Add More Produce", color = Emerald400, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
 
+            // Empty State
             if (state.plateItems.isEmpty()) {
                 item {
                     GlassmorphicCard(
@@ -221,32 +365,32 @@ fun PlateScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(24.dp),
+                                .padding(32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Eco,
-                                contentDescription = null,
-                                tint = Emerald400,
-                                modifier = Modifier.size(40.dp)
-                            )
+                            Text(text = "🍽️", fontSize = 40.sp)
                             Spacer(modifier = Modifier.height(10.dp))
+                            Text(text = "Your Plate is Empty", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Your Plate is Empty",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                            Text(
-                                text = "Go to Produce & tap 'Add to Plate' on any fruit, veggie or legume to start calculating nutrition.",
+                                text = "Scan a meal photo using AI Vision above, or tap below to browse whole foods and produce.",
                                 fontSize = 12.sp,
                                 color = Slate400,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = onNavigateToProduce,
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950)
+                            ) {
+                                Text("Browse Whole Foods Catalog", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
                         }
                     }
                 }
             } else {
+                // List of items sitting on plate
                 items(state.plateItems, key = { it.plateId }) { item ->
                     PlateItemCard(
                         item = item,
@@ -256,53 +400,194 @@ fun PlateScreen(
                 }
             }
 
-            // Recipe Recommendations Section
-            if (state.recommendedRecipes.isNotEmpty() && state.plateItems.isNotEmpty()) {
+            // Dynamic Recommended Recipes based on Plate Ingredients
+            if (state.recommendedRecipes.isNotEmpty()) {
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "✨ Recipes You Can Make With This Plate",
+                        text = "🍳 Recipes You Can Make With This Plate",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
 
-                items(state.recommendedRecipes, key = { it.id }) { recipe ->
+                items(state.recommendedRecipes, key = { it.title }) { recipe ->
                     RecipeCard(recipe = recipe)
                 }
             }
         }
+    }
 
-        // Edit Grams Dialog
-        if (state.isEditingItem != null) {
-            val item = state.isEditingItem!!
-            AlertDialog(
-                onDismissRequest = { viewModel.closeEditDialog() },
-                containerColor = Slate900,
-                title = { Text("Adjust ${item.foodItem.name} Portion", color = Color.White, fontWeight = FontWeight.Bold) },
-                text = {
+    // Edit Quantity Dialog
+    if (state.isEditingItem != null) {
+        val item = state.isEditingItem!!
+        AlertDialog(
+            onDismissRequest = { viewModel.closeEditDialog() },
+            title = { Text("Edit Portion: ${item.foodItem.name}", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Adjust quantity in grams:", fontSize = 12.sp, color = Slate300)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ServingSlider(
+                        currentGrams = state.editGrams,
+                        onGramsChanged = { viewModel.updateEditGrams(it) }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmEditQuantity() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950)
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.closeEditDialog() }) {
+                    Text("Cancel", color = Slate400)
+                }
+            },
+            containerColor = Slate900,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // AI Vision Detected Items Modal Bottom Sheet
+    if (state.showAiResultModal && state.aiResult != null) {
+        val aiResult = state.aiResult!!
+        var detectedItems by remember(aiResult) { mutableStateOf(aiResult.items) }
+
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.closeAiResultModal() },
+            containerColor = Slate900,
+            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                    .navigationBarsPadding(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Column {
-                        ServingSlider(
-                            currentGrams = state.editGrams,
-                            onGramsChanged = { viewModel.updateEditGrams(it) }
+                        Text(
+                            text = "AI Plate Recognition",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "${detectedItems.size} items identified from photo",
+                            fontSize = 12.sp,
+                            color = Emerald400
                         )
                     }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = { viewModel.confirmEditQuantity() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950)
-                    ) {
-                        Text("Update")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { viewModel.closeEditDialog() }) {
-                        Text("Cancel", color = Slate400)
+
+                    IconButton(onClick = { viewModel.closeAiResultModal() }) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "Close", tint = Slate400)
                     }
                 }
-            )
+
+                // Photo preview if available
+                state.scannedMealBitmap?.let { bmp ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(1.dp, GlassBorderDark, RoundedCornerShape(12.dp))
+                    ) {
+                        Image(
+                            bitmap = bmp.asImageBitmap(),
+                            contentDescription = "Meal Photo",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        )
+                    }
+                }
+
+                // Prominent Accuracy Disclaimer Banner
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(TrafficYellow.copy(alpha = 0.15f))
+                        .border(1.dp, TrafficYellow.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                        .padding(10.dp)
+                ) {
+                    Text(
+                        text = aiResult.disclaimer,
+                        fontSize = 11.sp,
+                        color = TrafficYellow,
+                        lineHeight = 15.sp
+                    )
+                }
+
+                // Detected items list
+                Text(text = "Detected Items & Portions:", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(detectedItems) { item ->
+                        GlassmorphicCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            backgroundColor = Slate800
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = item.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text(
+                                        text = "${String.format("%.0f", item.grams)}g • ${item.energy_kcal.toInt()} kcal • ${String.format("%.1f", item.protein)}g Protein",
+                                        fontSize = 11.sp,
+                                        color = Slate300
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = {
+                                        detectedItems = detectedItems.filter { it.name != item.name }
+                                    }
+                                ) {
+                                    Icon(imageVector = Icons.Default.DeleteOutline, contentDescription = "Remove", tint = TrafficRed, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Confirm CTA Button
+                Button(
+                    onClick = {
+                        viewModel.confirmAddAiItemsToPlate(detectedItems)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950),
+                    enabled = detectedItems.isNotEmpty()
+                ) {
+                    Icon(imageVector = Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Add All Items to Plate", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 }

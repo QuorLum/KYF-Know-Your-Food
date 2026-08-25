@@ -1,5 +1,6 @@
 package com.kyf.knowyourfood.ui.screens.plate
 
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kyf.knowyourfood.data.local.entity.ProfileEntity
@@ -8,6 +9,9 @@ import com.kyf.knowyourfood.data.model.PlateNutritionTotals
 import com.kyf.knowyourfood.data.model.RecommendedRecipe
 import com.kyf.knowyourfood.data.repository.PlateRepository
 import com.kyf.knowyourfood.data.repository.ProfileRepository
+import com.kyf.knowyourfood.domain.ai.AiPlateAnalysisResult
+import com.kyf.knowyourfood.domain.ai.GeminiFoodVisionService
+import com.kyf.knowyourfood.domain.ai.RecognizedFoodItem
 import com.kyf.knowyourfood.domain.engine.NutrientCalculator
 import com.kyf.knowyourfood.domain.engine.RecipeEngine
 import kotlinx.coroutines.flow.*
@@ -20,12 +24,18 @@ data class PlateUiState(
     val recommendedRecipes: List<RecommendedRecipe> = emptyList(),
     val isEditingItem: PlateItemWithFood? = null,
     val editGrams: Double = 100.0,
-    val exportShareText: String? = null
+    val exportShareText: String? = null,
+    val isAiAnalyzing: Boolean = false,
+    val aiResult: AiPlateAnalysisResult? = null,
+    val showAiResultModal: Boolean = false,
+    val scannedMealBitmap: Bitmap? = null,
+    val aiErrorMessage: String? = null
 )
 
 class PlateViewModel(
     private val plateRepository: PlateRepository,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val geminiFoodVisionService: GeminiFoodVisionService = GeminiFoodVisionService()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlateUiState())
@@ -61,6 +71,73 @@ class PlateViewModel(
                 }
             }
         }
+    }
+
+    /**
+     * Triggered when user captures or picks a meal photo.
+     * Analyzes image with Gemini 1.5 Flash Vision AI.
+     */
+    fun analyzeMealPhoto(bitmap: Bitmap) {
+        _uiState.update {
+            it.copy(
+                isAiAnalyzing = true,
+                scannedMealBitmap = bitmap,
+                aiErrorMessage = null
+            )
+        }
+
+        viewModelScope.launch {
+            val result = geminiFoodVisionService.analyzePlatePhoto(bitmap)
+            if (result.isSuccess) {
+                _uiState.update {
+                    it.copy(
+                        isAiAnalyzing = false,
+                        aiResult = result,
+                        showAiResultModal = true,
+                        aiErrorMessage = null
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isAiAnalyzing = false,
+                        aiResult = null,
+                        showAiResultModal = false,
+                        aiErrorMessage = result.errorMessage ?: "Could not recognize food items."
+                    )
+                }
+            }
+        }
+    }
+
+    fun confirmAddAiItemsToPlate(items: List<RecognizedFoodItem>) {
+        val profileId = _uiState.value.activeProfile?.id ?: return
+        viewModelScope.launch {
+            items.forEach { item ->
+                plateRepository.addAiRecognizedItem(profileId, item)
+            }
+            _uiState.update {
+                it.copy(
+                    showAiResultModal = false,
+                    aiResult = null,
+                    scannedMealBitmap = null
+                )
+            }
+        }
+    }
+
+    fun closeAiResultModal() {
+        _uiState.update {
+            it.copy(
+                showAiResultModal = false,
+                aiResult = null,
+                scannedMealBitmap = null
+            )
+        }
+    }
+
+    fun dismissAiError() {
+        _uiState.update { it.copy(aiErrorMessage = null) }
     }
 
     fun openEditQuantity(item: PlateItemWithFood) {

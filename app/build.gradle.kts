@@ -1,9 +1,19 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+val geminiApiKey: String = localProperties.getProperty("gemini.api.key", "")
 
 android {
     namespace = "com.kyf.knowyourfood"
@@ -20,6 +30,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
 
         ndk {
             // Explicitly support x64 (x86_64) architecture along with standard ABIs
@@ -48,6 +60,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
@@ -87,6 +100,12 @@ dependencies {
     // Kotlin Serialization JSON
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
+    // Networking with OkHttp
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Google Gemini AI SDK for Food Vision
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+
     // CameraX & ML Kit Barcode Scanning
     val cameraxVersion = "1.3.2"
     implementation("androidx.camera:camera-core:$cameraxVersion")
@@ -108,3 +127,4 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+
