@@ -1,6 +1,5 @@
 package com.kyf.knowyourfood.ui.screens.home
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,15 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyf.knowyourfood.data.local.entity.ProfileEntity
 import com.kyf.knowyourfood.data.model.ProductItem
 import com.kyf.knowyourfood.ui.components.*
 import com.kyf.knowyourfood.ui.theme.*
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 
 @Composable
 fun HomeScreen(
@@ -37,8 +36,10 @@ fun HomeScreen(
     onNavigateToScanner: () -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToProduce: () -> Unit,
+    onNavigateToPlate: () -> Unit,
     onNavigateToProductDetail: (String) -> Unit,
-    onNavigateToProfiles: () -> Unit
+    onNavigateToProfiles: () -> Unit,
+    onNavigateToHistory: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -58,76 +59,261 @@ fun HomeScreen(
         return
     }
 
+    val active = state.activeProfile
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Slate950)
             .statusBarsPadding()
             .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        contentPadding = PaddingValues(top = 12.dp, bottom = 90.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. Header with Active Profile Switcher
+        // 1. Profile Switcher Horizontal Rail
         item {
-            HeaderSection(
-                activeProfile = state.activeProfile,
-                profiles = state.profiles,
-                onProfileSelected = { viewModel.selectProfile(it.id) },
-                onManageProfiles = onNavigateToProfiles
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LazyRow(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    items(state.profiles, key = { it.id }) { p ->
+                        val isSelected = p.id == active?.id
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(if (isSelected) Emerald500.copy(alpha = 0.25f) else Slate800)
+                                .border(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) Emerald400 else Slate700,
+                                    shape = CircleShape
+                                )
+                                .clickable { viewModel.selectProfile(p.id) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = p.name.take(1).uppercase(),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) Emerald400 else Color.White
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Slate800)
+                        .border(1.dp, Emerald400.copy(alpha = 0.5f), CircleShape)
+                        .clickable(onClick = onNavigateToProfiles),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Profile",
+                        tint = Emerald400,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
 
-        // 2. Global Nutrition Explorer & Quick Search Hub (No duplicate scan button)
+        // 2. Greeting Header
         item {
-            QuickDiscoveryBanner(
-                onSearchClick = onNavigateToSearch,
-                onExploreProduce = onNavigateToProduce
-            )
-        }
-
-        // 3. Active Profile Allergy Alert Overview
-        if (state.activeProfile != null) {
-            item {
-                ActiveProfileSummaryCard(
-                    profile = state.activeProfile!!,
-                    onEditClick = onNavigateToProfiles
+            Column {
+                Text(
+                    text = "Hello, ${active?.name ?: "Friend"} 👋",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+                Text(
+                    text = "What are we analyzing today?",
+                    fontSize = 13.sp,
+                    color = Slate400
                 )
             }
         }
 
-        // 4. Daily Plate Snapshot
-        item {
-            DailyPlateSnapshotCard(
-                plateItemsCount = state.plateItems.size,
-                totals = state.plateTotals,
-                onOpenPlate = onNavigateToProduce
-            )
-        }
-
-        // 5. Featured Healthy Alternatives Swaps (guarded against empty states)
-        if (state.featuredHealthySwaps.isNotEmpty()) {
+        // 3. Active Profile Quick Card
+        if (active != null) {
             item {
-                Text(
-                    text = "Smart Healthier Swaps",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    state.featuredHealthySwaps.take(3).forEach { (bad, good) ->
-                        HealthySwapCard(
-                            unhealthyProduct = bad,
-                            healthyAlternative = good,
-                            onClickUnhealthy = { onNavigateToProductDetail(bad.barcode) },
-                            onClickHealthy = { onNavigateToProductDetail(good.barcode) }
+                GlassmorphicCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = Slate900,
+                    onClick = onNavigateToProfiles
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .clip(CircleShape)
+                                    .background(Emerald500.copy(alpha = 0.2f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = active.name.take(1).uppercase(),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Emerald400
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column {
+                                Text(
+                                    text = "ACTIVE PROFILE",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Emerald400
+                                )
+                                Text(
+                                    text = active.name,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "${active.age} yrs · ${active.gender} · ${if (active.allergiesJson.length > 5) "Guarded Allergens" else "No Allergens"}",
+                                    fontSize = 11.sp,
+                                    color = Slate400
+                                )
+                            }
+                        }
+
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Slate400,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
             }
         }
 
-        // 6. Popular Discoverable Products Carousel
+        // 4. Quick Actions 2x2 Grid
+        item {
+            Text(text = "Quick Actions", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                QuickActionCard(
+                    title = "Scan Product",
+                    subtitle = "Barcode / QR",
+                    icon = Icons.Default.QrCodeScanner,
+                    tint = Emerald400,
+                    onClick = onNavigateToScanner,
+                    modifier = Modifier.weight(1f)
+                )
+                QuickActionCard(
+                    title = "Build Plate",
+                    subtitle = "AI Meal Vision",
+                    icon = Icons.Default.Restaurant,
+                    tint = Cyan400,
+                    onClick = onNavigateToPlate,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                QuickActionCard(
+                    title = "Search Foods",
+                    subtitle = "3M+ Products",
+                    icon = Icons.Default.Search,
+                    tint = Color(0xFFA78BFA),
+                    onClick = onNavigateToSearch,
+                    modifier = Modifier.weight(1f)
+                )
+                QuickActionCard(
+                    title = "Explore Produce",
+                    subtitle = "Whole Foods",
+                    icon = Icons.Default.Eco,
+                    tint = Color(0xFF34D399),
+                    onClick = onNavigateToProduce,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        // 5. Today's Summary Card
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Today's Summary", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(
+                    text = "See Plate",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Emerald400,
+                    modifier = Modifier.clickable(onClick = onNavigateToPlate)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            GlassmorphicCard(modifier = Modifier.fillMaxWidth(), backgroundColor = Slate900) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val cal = state.plateTotals?.totalCaloriesKcal ?: 0.0
+                    val calPct = ((cal / 2000.0) * 100).toFloat()
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularRing(percentage = calPct, size = 50.dp, ringColor = Emerald400) {
+                            Text("${calPct.toInt()}%", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Emerald400)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("CALORIES", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Slate400)
+                            Text("${cal.toInt()}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("/ 2,000 kcal", fontSize = 10.sp, color = Slate400)
+                        }
+                    }
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("NUTRIENTS", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Slate400)
+                        Text("Good", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Emerald400)
+                        Text("Balanced", fontSize = 10.sp, color = Slate400)
+                    }
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("ALERTS", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Slate400)
+                        Text("${state.plateTotals?.upperLimitAlerts?.size ?: 0}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("All clear", fontSize = 10.sp, color = Emerald400)
+                    }
+                }
+            }
+        }
+
+        // 6. Recent Scans
         if (state.recentProducts.isNotEmpty()) {
             item {
                 Row(
@@ -135,486 +321,74 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(text = "Recent Scans", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text(
-                        text = "Products in Database",
-                        fontSize = 18.sp,
+                        text = "See All",
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Explore All",
-                        fontSize = 13.sp,
                         color = Emerald400,
-                        modifier = Modifier.clickable(onClick = onNavigateToSearch)
+                        modifier = Modifier.clickable(onClick = onNavigateToHistory)
                     )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.recentProducts) { product ->
-                        ProductMiniCard(
-                            product = product,
-                            onClick = { onNavigateToProductDetail(product.barcode) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun HeaderSection(
-    activeProfile: ProfileEntity?,
-    profiles: List<ProfileEntity>,
-    onProfileSelected: (ProfileEntity) -> Unit,
-    onManageProfiles: () -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Know Your Food",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White
-                )
-                Text(
-                    text = "Smart Allergen & Nutrition Guard",
-                    fontSize = 13.sp,
-                    color = Slate400
-                )
-            }
-
-            IconButton(
-                onClick = onManageProfiles,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(Slate800)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ManageAccounts,
-                    contentDescription = "Manage Profiles",
-                    tint = Emerald400
-                )
-            }
-        }
-
-        if (profiles.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Profile Selector Pills
-            Text(
-                text = "Active Family Member:",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = Slate400
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(profiles) { profile ->
-                    val isSelected = activeProfile?.id == profile.id
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(if (isSelected) Emerald500 else Slate850)
-                            .border(1.dp, if (isSelected) Emerald400 else Slate700, RoundedCornerShape(20.dp))
-                            .clickable { onProfileSelected(profile) }
-                            .padding(horizontal = 14.dp, vertical = 7.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = if (profile.age < 12) Icons.Default.ChildCare else Icons.Default.Person,
-                                contentDescription = null,
-                                tint = if (isSelected) Slate950 else Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = profile.name,
-                                fontSize = 13.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Slate950 else Color.White
-                            )
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    state.recentProducts.take(3).forEach { prod ->
+                        GlassmorphicCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            backgroundColor = Slate900,
+                            onClick = { onNavigateToProductDetail(prod.barcode) }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                FoodImageThumbnail(
+                                    imageUrl = FoodImageHelper.getProductImageUrl(prod.barcode, prod.name, prod.brand, prod.category),
+                                    fallbackEmoji = FoodImageHelper.getProductEmoji(prod.name, prod.category),
+                                    size = 40.dp
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = prod.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text(text = "${prod.brand} · ${prod.nutriScore.letter} Grade", fontSize = 10.sp, color = Slate400)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Emerald500.copy(alpha = 0.2f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(text = "SAFE", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Emerald400)
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-    }
-}
 
-@Composable
-fun QuickDiscoveryBanner(
-    onSearchClick: () -> Unit,
-    onExploreProduce: () -> Unit
-) {
-    GlassmorphicCard(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = Slate900
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(Emerald500.copy(alpha = 0.12f), Color.Transparent)
-                    )
-                )
-                .padding(16.dp)
-        ) {
+        // 7. Feature Highlights Cards
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Global Nutrition Explorer",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "3M+ global products & USDA/INDB whole foods",
-                        fontSize = 11.sp,
-                        color = Slate400
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Emerald500.copy(alpha = 0.2f))
-                        .border(1.dp, Emerald500, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "GLOBAL SYNC",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Emerald400
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Quick Search Searchbar Bar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Slate800)
-                    .border(1.dp, GlassBorderDark, RoundedCornerShape(12.dp))
-                    .clickable(onClick = onSearchClick)
-                    .padding(horizontal = 14.dp, vertical = 12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            tint = Slate400,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Search any product, brand, or ingredient...",
-                            fontSize = 12.sp,
-                            color = Slate400
-                        )
-                    }
-
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        tint = Emerald400,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Quick Category Shortcuts
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onExploreProduce,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
-                ) {
-                    Text("🥦 Whole Foods", fontSize = 11.sp)
-                }
-
-                OutlinedButton(
-                    onClick = onSearchClick,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
-                ) {
-                    Text("📦 Packaged Goods", fontSize = 11.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ActiveProfileSummaryCard(
-    profile: ProfileEntity,
-    onEditClick: () -> Unit
-) {
-    GlassmorphicCard(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = Slate900
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = null,
-                        tint = Emerald400,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${profile.name}'s Safety Guard",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-                Text(
-                    text = "Edit Rules",
-                    fontSize = 12.sp,
-                    color = Emerald400,
-                    modifier = Modifier.clickable(onClick = onEditClick)
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Age: ${profile.age} yrs • Weight: ${profile.weight} kg • Height: ${profile.height} cm",
-                fontSize = 12.sp,
-                color = Slate400
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Active Protection: Automated checks for major FDA 9, EU 14, FSSAI 8 triggers, cross-reactivity syndromes & pediatric sugar guardrails.",
-                fontSize = 12.sp,
-                color = Slate200
-            )
-        }
-    }
-}
-
-@Composable
-fun DailyPlateSnapshotCard(
-    plateItemsCount: Int,
-    totals: com.kyf.knowyourfood.data.model.PlateNutritionTotals?,
-    onOpenPlate: () -> Unit
-) {
-    GlassmorphicCard(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = Slate900,
-        onClick = onOpenPlate
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Restaurant,
-                        contentDescription = null,
-                        tint = Cyan400,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Produce & Plate Planner",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-                Text(
-                    text = "$plateItemsCount items",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Cyan400
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (totals != null && plateItemsCount > 0) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    MacroPill(
-                        label = "Calories",
-                        value = "${totals.totalCaloriesKcal.toInt()} kcal",
-                        accentColor = Emerald400,
-                        modifier = Modifier.weight(1f)
-                    )
-                    MacroPill(
-                        label = "Protein",
-                        value = "${String.format("%.1f", totals.totalProteinG)}g",
-                        accentColor = Cyan400,
-                        modifier = Modifier.weight(1f)
-                    )
-                    MacroPill(
-                        label = "Fiber",
-                        value = "${String.format("%.1f", totals.totalFiberG)}g",
-                        accentColor = TrafficYellow,
-                        modifier = Modifier.weight(1f)
-                    )
-                    MacroPill(
-                        label = "Iron",
-                        value = "${String.format("%.1f", totals.totalIronMg)}mg",
-                        accentColor = Color(0xFFF472B6),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            } else {
-                Text(
-                    text = "Plate is currently empty. Tap to explore global fruits, vegetables & legumes and build your meal!",
-                    fontSize = 13.sp,
-                    color = Slate400
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HealthySwapCard(
-    unhealthyProduct: ProductItem,
-    healthyAlternative: ProductItem,
-    onClickUnhealthy: () -> Unit,
-    onClickHealthy: () -> Unit
-) {
-    GlassmorphicCard(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = Slate900
-    ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Category: ${unhealthyProduct.category}",
-                    fontSize = 11.sp,
-                    color = Slate400
-                )
-                Text(
-                    text = "RECOMMENDED SWAP",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Emerald400
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Unhealthy Item
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(onClick = onClickUnhealthy),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FoodImageThumbnail(
-                        imageUrl = FoodImageHelper.getProductImageUrl(
-                            barcode = unhealthyProduct.barcode,
-                            name = unhealthyProduct.name,
-                            brand = unhealthyProduct.brand,
-                            category = unhealthyProduct.category
-                        ),
-                        fallbackEmoji = FoodImageHelper.getProductEmoji(unhealthyProduct.category, unhealthyProduct.name),
-                        size = 38.dp,
-                        contentDescription = unhealthyProduct.name
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = unhealthyProduct.name,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        NutriScoreBadge(grade = unhealthyProduct.nutriScore, compact = true)
+                GlassmorphicCard(modifier = Modifier.weight(1f), backgroundColor = Slate900) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Icon(imageVector = Icons.Default.Shield, contentDescription = null, tint = Emerald400, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text("Allergen Guard", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Family safety shields", fontSize = 10.sp, color = Slate400)
                     }
                 }
-
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Swap To",
-                    tint = Emerald400,
-                    modifier = Modifier.padding(horizontal = 6.dp)
-                )
-
-                // Healthy Item
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(onClick = onClickHealthy),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FoodImageThumbnail(
-                        imageUrl = FoodImageHelper.getProductImageUrl(
-                            barcode = healthyAlternative.barcode,
-                            name = healthyAlternative.name,
-                            brand = healthyAlternative.brand,
-                            category = healthyAlternative.category
-                        ),
-                        fallbackEmoji = FoodImageHelper.getProductEmoji(healthyAlternative.category, healthyAlternative.name),
-                        size = 38.dp,
-                        contentDescription = healthyAlternative.name
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = healthyAlternative.name,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Emerald400,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        NutriScoreBadge(grade = healthyAlternative.nutriScore, compact = true)
+                GlassmorphicCard(modifier = Modifier.weight(1f), backgroundColor = Slate900) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Icon(imageVector = Icons.Default.Bolt, contentDescription = null, tint = Cyan400, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text("100% Offline", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Private on-device data", fontSize = 10.sp, color = Slate400)
                     }
                 }
             }
@@ -623,57 +397,32 @@ fun HealthySwapCard(
 }
 
 @Composable
-fun ProductMiniCard(
-    product: ProductItem,
-    onClick: () -> Unit
+fun QuickActionCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    tint: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val imageUrl = FoodImageHelper.getProductImageUrl(
-        barcode = product.barcode,
-        name = product.name,
-        brand = product.brand,
-        category = product.category
-    )
-    val emoji = FoodImageHelper.getProductEmoji(product.category, product.name)
-
     GlassmorphicCard(
-        modifier = Modifier
-            .width(160.dp)
-            .height(175.dp),
+        modifier = modifier,
         backgroundColor = Slate900,
         onClick = onClick
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            FoodImageThumbnail(
-                imageUrl = imageUrl,
-                fallbackEmoji = emoji,
-                size = 48.dp,
-                contentDescription = product.name,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Column {
-                Text(
-                    text = product.brand.uppercase(),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Emerald400
-                )
-                Text(
-                    text = product.name,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+        Column(modifier = Modifier.padding(14.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(tint.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
             }
-
-            NutriScoreBadge(grade = product.nutriScore, compact = true)
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(text = title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text = subtitle, fontSize = 11.sp, color = Slate400)
         }
     }
 }

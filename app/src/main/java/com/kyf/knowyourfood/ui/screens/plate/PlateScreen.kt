@@ -44,7 +44,9 @@ import com.kyf.knowyourfood.ui.theme.*
 fun PlateScreen(
     viewModel: PlateViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToProduce: () -> Unit
+    onNavigateToProduce: () -> Unit,
+    onNavigateToAnalysis: () -> Unit = {},
+    onNavigateToRecipes: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -397,6 +399,34 @@ fun PlateScreen(
                         onEdit = { viewModel.openEditQuantity(item) },
                         onRemove = { viewModel.removeItem(item) }
                     )
+                }
+
+                // Action CTAs
+                item {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onNavigateToAnalysis,
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Emerald500, contentColor = Slate950)
+                    ) {
+                        Icon(imageVector = Icons.Default.Analytics, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Analyze Full Nutrition & UL Safety", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = onNavigateToRecipes,
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                    ) {
+                        Icon(imageVector = Icons.Default.MenuBook, contentDescription = null, tint = Emerald400, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("See Recipe Recommendations", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
 

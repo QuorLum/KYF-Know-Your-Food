@@ -32,7 +32,8 @@ import com.kyf.knowyourfood.ui.theme.*
 @Composable
 fun ProduceScreen(
     viewModel: ProduceViewModel,
-    onNavigateToPlate: () -> Unit
+    onNavigateToPlate: () -> Unit,
+    onNavigateToFoodDetail: (Long) -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
