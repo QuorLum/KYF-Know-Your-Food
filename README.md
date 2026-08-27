@@ -29,50 +29,50 @@
       <b>Home Dashboard (Retro Theme)</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/02_barcode_scanner.jpg" alt="Live Barcode Scanner" width="100%" style="border-radius: 16px;"/><br/>
+      <img src="./screenshots/02_Family_profiles.jpg" alt="Multi-User Family Profiles" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Multi-User Family Profiles</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="./screenshots/03_Allergy_and_safety.jpg" alt="Clinical Allergy & Safety Setup" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Clinical Allergy & Safety Setup</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <img src="./screenshots/04_build_your_plate_and_AI_scan.jpg" alt="Build Your Plate & AI Scan" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Build Your Plate & AI Scan</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="./screenshots/05_live_barcode_scanner.jpg" alt="Live Barcode Scanner" width="100%" style="border-radius: 16px;"/><br/>
       <b>Live Barcode Scanner</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/03_explore_produce.jpg" alt="Explore Produce & Whole Foods" width="100%" style="border-radius: 16px;"/><br/>
+      <img src="./screenshots/06_explore_produce.jpg" alt="Explore Produce & Whole Foods" width="100%" style="border-radius: 16px;"/><br/>
       <b>Explore Produce & Whole Foods</b>
     </td>
   </tr>
   <tr>
     <td align="center" width="33%">
-      <img src="./screenshots/04_search_discover.jpg" alt="Search (Best to Worst Ranking)" width="100%" style="border-radius: 16px;"/><br/>
+      <img src="./screenshots/07_search_products.jpg" alt="Search Products" width="100%" style="border-radius: 16px;"/><br/>
       <b>Search (Best-to-Worst Ranking)</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/05_app_settings.jpg" alt="Settings & Gemini AI Configuration" width="100%" style="border-radius: 16px;"/><br/>
+      <img src="./screenshots/08_settings.jpg" alt="App Settings" width="100%" style="border-radius: 16px;"/><br/>
       <b>Settings & Gemini AI Config</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/06_theme_picker.jpg" alt="Dynamic 8-Theme Customizer" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Dynamic 8-Theme Switcher</b>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="33%">
-      <img src="./screenshots/07_home_dark.jpg" alt="Home Dashboard (Obsidian Dark)" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Home (Obsidian Dark)</b>
-    </td>
-    <td align="center" width="33%">
-      <img src="./screenshots/08_home_glass.jpg" alt="Home Dashboard (Frosted Glass)" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Home (Frosted Glass)</b>
-    </td>
-    <td align="center" width="33%">
-      <img src="./screenshots/09_plate_builder.jpg" alt="Interactive Meal Plate Builder" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Interactive Plate Builder</b>
+      <img src="./screenshots/09_Multiple_themes.jpg" alt="Multiple Themes" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Dynamic 8-Theme Customizer</b>
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <img src="./screenshots/10_family_profiles.jpg" alt="Family Health Profiles" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Multi-User Family Profiles</b>
+      <img src="./screenshots/10_Theme_candy_dark.jpg" alt="Candy Dark Theme" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Theme: Candy Dark</b>
     </td>
     <td align="center" width="50%">
-      <img src="./screenshots/11_allergy_safety_setup.jpg" alt="Clinical Allergy & Safety Guard Setup" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Clinical Allergy & Safety Setup</b>
+      <img src="./screenshots/11_Theme_frosted_glass.jpg" alt="Frosted Glass Theme" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Theme: Frosted Glass</b>
     </td>
   </tr>
 </table>
