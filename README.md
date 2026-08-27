@@ -25,58 +25,54 @@
 <table>
   <tr>
     <td align="center" width="33%">
-      <img src="./screenshots/01_home_dashboard.jpg" alt="Home Dashboard" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Home Dashboard & Health Snapshot</b>
+      <img src="./screenshots/01_home_retro.jpg" alt="Home Dashboard (Retro Theme)" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Home Dashboard (Retro Theme)</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/05_live_barcode_scanner.jpg" alt="Live Barcode Scanner" width="100%" style="border-radius: 16px;"/><br/>
+      <img src="./screenshots/02_barcode_scanner.jpg" alt="Live Barcode Scanner" width="100%" style="border-radius: 16px;"/><br/>
       <b>Live Barcode Scanner</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/06_product_safety_assessment.jpg" alt="Product Safety Assessment" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Product Safety & Traffic Lights</b>
+      <img src="./screenshots/03_explore_produce.jpg" alt="Explore Produce & Whole Foods" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Explore Produce & Whole Foods</b>
     </td>
   </tr>
   <tr>
     <td align="center" width="33%">
-      <img src="./screenshots/07_search_best_to_worst.jpg" alt="Unified Search" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Unified Search (Best to Worst)</b>
+      <img src="./screenshots/04_search_discover.jpg" alt="Search (Best to Worst Ranking)" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Search (Best-to-Worst Ranking)</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/08_produce_whole_foods.jpg" alt="Produce Explorer" width="100%" style="border-radius: 16px;"/><br/>
-      <b>USDA & INDB 2024 Produce</b>
+      <img src="./screenshots/05_app_settings.jpg" alt="Settings & Gemini AI Configuration" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Settings & Gemini AI Config</b>
     </td>
     <td align="center" width="33%">
-      <img src="./screenshots/09_produce_portion_slider.jpg" alt="Produce Portion Slider" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Portion Scaling & Micronutrients</b>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="33%">
-      <img src="./screenshots/10_plate_meal_builder.jpg" alt="Plate Meal Builder" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Interactive Plate & UL Safety</b>
-    </td>
-    <td align="center" width="33%">
-      <img src="./screenshots/11_gemini_ai_vision_scan.jpg" alt="Gemini AI Vision Meal Scan" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Gemini 1.5 Flash Meal Scanner</b>
-    </td>
-    <td align="center" width="33%">
-      <img src="./screenshots/04_allergy_safety_setup.jpg" alt="Allergy & Safety Setup" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Allergy & Safety Setup</b>
+      <img src="./screenshots/06_theme_picker.jpg" alt="Dynamic 8-Theme Customizer" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Dynamic 8-Theme Switcher</b>
     </td>
   </tr>
   <tr>
     <td align="center" width="33%">
-      <img src="./screenshots/02_family_profiles.jpg" alt="Family Profiles" width="100%" style="border-radius: 16px;"/><br/>
+      <img src="./screenshots/07_home_dark.jpg" alt="Home Dashboard (Obsidian Dark)" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Home (Obsidian Dark)</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="./screenshots/08_home_glass.jpg" alt="Home Dashboard (Frosted Glass)" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Home (Frosted Glass)</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="./screenshots/09_plate_builder.jpg" alt="Interactive Meal Plate Builder" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Interactive Plate Builder</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./screenshots/10_family_profiles.jpg" alt="Family Health Profiles" width="100%" style="border-radius: 16px;"/><br/>
       <b>Multi-User Family Profiles</b>
     </td>
-    <td align="center" width="33%">
-      <img src="./screenshots/03_profile_avatar_picker.jpg" alt="Profile Avatar Picker" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Custom Avatars & Photo Upload</b>
-    </td>
-    <td align="center" width="33%">
-      <img src="./screenshots/01_home_dashboard.jpg" alt="Healing Recipes" width="100%" style="border-radius: 16px;"/><br/>
-      <b>Whole-Food Healing Recipes</b>
+    <td align="center" width="50%">
+      <img src="./screenshots/11_allergy_safety_setup.jpg" alt="Clinical Allergy & Safety Guard Setup" width="100%" style="border-radius: 16px;"/><br/>
+      <b>Clinical Allergy & Safety Setup</b>
     </td>
   </tr>
 </table>
